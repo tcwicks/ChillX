@@ -53,7 +53,8 @@ However managing concurrency and backend load etc... are not always as straight 
             return new DummyResponse() { ErrorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
         }
         KeyValuePair<bool, ThreadedWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
-        workItemResult = await ThreadedProcessorExample.TryGetProcessedWorkItemAsync(RequestID, 1000,
+        workItemResult = await ThreadedProcessorExample.TryGetProcessedWorkItemAsync(RequestID, 
+            _timeoutMS: 1000, //Timeout of 1 second
             _taskWaitType: ThreadProcessorAsyncTaskWaitType.Delay_Specific,
             _delayMS: 10);
         if (!workItemResult.Key)
