@@ -37,7 +37,7 @@ namespace ChillXLogging
                 return m_Instance;
             }
         }
-        public LogEntry LogMessage(LogSeverity _severity, string _message, Exception _ex = null, DateTime? _eventTime = null)
+        public static LogEntry LogMessage(LogSeverity _severity, string _message, Exception _ex = null, DateTime? _eventTime = null)
         {
             return Instance.Log(_severity, _message, _ex, _eventTime);
         }

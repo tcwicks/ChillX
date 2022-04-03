@@ -27,6 +27,24 @@ namespace ChillXLoggingTest
             Logger.RegisterHandler(@"RolloverByCount", FileLogHandler_RolloverByCount);
             Logger.RegisterHandler(@"RolloverByTime", FileLogHandler_RolloverByTime);
 
+            ////Example usage
+            //Logger.LogMessage(LogSeverity.info, @"Some message text");
+            //Logger.LogMessage(LogSeverity.info, @"Some message text", _ex: new Exception(@""), DateTime.Now);
+            //@"This is a log message".Log(LogSeverity.info);
+            //LogSeverity.debug.Log(@"This is another log entry");
+            //LogSeverity.error.Log(@"Lets log a post dated exception", new Exception(@"Some message here"), DateTime.Now.AddHours(8));
+            //try
+            //{
+            //    throw new InvalidOperationException(@"test exception");
+            //}
+            //catch (Exception ex)
+            //{
+            //    ex.Log(@"This is a test exception", LogSeverity.debug);
+            //    //Supports chaining
+            //    throw ex.Log(@"This is a test exception", LogSeverity.debug).MessageException;
+            //}
+
+
             Stopwatch SW = new Stopwatch();
             SW.Start();
             //Burst test
@@ -102,6 +120,7 @@ namespace ChillXLoggingTest
                     Console.WriteLine(@"Pending Log Item Count: {0}", Logger.Instance.PendingLogItemCount());
                 }
             }
+
 
             Logger.ShutDown();
         }

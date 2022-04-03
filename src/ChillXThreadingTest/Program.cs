@@ -69,7 +69,7 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
     // Thread Controller Configuration: 16 Threads
     //-----------------------------------------------------------------------------------
     //    _MaxWorkItemLimitPerClient: 100
-    //    _MaxWorkerThreads: 4
+    //    _MaxWorkerThreads: 16
     //    _ThreadStartupPerWorkItems: 4
     //    _ThreadStartupMinQueueSize: 4
     //    _IdleWorkerThreadExitSeconds: 10
@@ -103,7 +103,7 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
     //Thread Controller Thread Exited : Active: 00:00:03.9983566 - Idle: 00:01:15.0663355
 
 
-    //Note: IO Wait Bound Test: Using Thread.Sleep for simulating unit of work processing
+    //Note: IO Wait Bound Test: Using Thread.Sleep of 1 MS for simulating unit of work processing
     //Baseline Fixed Overhead: 1000 Calls : 00:00:00.0028940
     //Baseline Processing Overhead At 1ms Per Unit Of Work: 1000 Calls : 00:00:15.7583522
     //Via Concurrent Thread Controller(1ms Per Unit Of Work) - 1000 Calls From 1 Sync Client: 00:00:15.7395597
@@ -218,6 +218,44 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
     //Thread Controller Thread Exited : Active: 00:03:26.0895249 - Idle: 00:01:33.6232426
     //Thread Controller Thread Exited : Active: 00:03:25.5835250 - Idle: 00:01:34.0952484
     //Thread Controller Thread Exited : Active: 00:03:26.6804041 - Idle: 00:01:33.1721094
+
+
+
+    ////Example Usage for WebAPI controller 
+    //private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int> ThreadedProcessorExample = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int>(
+    //        _maxWorkItemLimitPerClient: 100 // Maximum number of concurrent requests in the processing queue per client
+    //        , _maxWorkerThreads: 16 // Maximum number of threads to scale upto
+    //        , _threadStartupPerWorkItems: 4 // Consider starting a new processing thread ever X requests
+    //        , _threadStartupMinQueueSize: 4 // Do NOT start a new processing thread if work item queue is below this size
+    //        , _idleWorkerThreadExitSeconds: 10 // Idle threads will exit after X seconds
+    //        , _abandonedResponseExpirySeconds: 60 // Expire processed work items after X seconds (Maybe the client terminated or the web request thread died)
+    //        , _processRequestMethod: ProcessRequestMethod // Your Do Work method for processing the request
+    //        , _logErrorMethod: Handler_LogError
+    //        , _logMessageMethod: Handler_LogMessage
+    //        );
+
+    //public async Task<DummyResponse> GetResponse([FromBody] DummyRequest Request)
+    //{
+    //    int ClientID = 1; //Replace with the client ID from your authentication mechanism
+    //    int RequestID = ThreadedProcessorExample.ScheduleWorkItem(Request, ClientID);
+    //    KeyValuePair<bool, ThreadedWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
+    //    workItemResult = await ThreadedProcessorExample.TryGetProcessedWorkItemAsync(RequestID, 1000,
+    //        _taskWaitType: ThreadProcessorAsyncTaskWaitType.Delay_Specific,
+    //        _delayMS: 10);
+    //    if (!workItemResult.Key)
+    //    {
+    //        //Client has exceeded maximum number of concurrent requests or Application Pool is shutting down
+    //        //return a suitable error message here
+    //        return new DummyResponse() { ErrorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
+    //    }
+    //    return workItemResult.Value.Response;
+    //}
+
+    //public static DummyResponse ProcessRequestMethod(DummyRequest request)
+    //{
+    //    // Process the request and return the response
+    //    return new DummyResponse() { orderID = request.orderID };
+    //}
 
 
     class Program
@@ -550,6 +588,7 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
             }
             return new DummyResponse() { orderID = request.orderID };
         }
+
 
         [ThreadStatic]
         private static Stopwatch SWProcessingWait;
