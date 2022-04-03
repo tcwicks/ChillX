@@ -29,7 +29,7 @@ However managing concurrency and backend load etc... are not always as straight 
 
 ### Example Usage
 
-    //Example Usage for WebAPI controller
+    //Example Usage for WebAPI controller 
     private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int> ThreadedProcessorExample = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int>(
             _maxWorkItemLimitPerClient: 100 // Maximum number of concurrent requests in the processing queue per client
             , _maxWorkerThreads: 16 // Maximum number of threads to scale upto
@@ -41,7 +41,7 @@ However managing concurrency and backend load etc... are not always as straight 
             , _logErrorMethod: Handler_LogError
             , _logMessageMethod: Handler_LogMessage
             );
-        
+
     public async Task<DummyResponse> GetResponse([FromBody] DummyRequest Request)
     {
         int ClientID = 1; //Replace with the client ID from your authentication mechanism
@@ -52,7 +52,9 @@ However managing concurrency and backend load etc... are not always as straight 
             _delayMS: 10);
         if (!workItemResult.Key)
         {
-            return new DummyResponse() { orderID = -1 };
+            //Client has exceeded maximum number of concurrent requests or Application Pool is shutting down
+            //return a suitable error message here
+            return new DummyResponse() { ErrorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
         }
         return workItemResult.Value.Response;
     }
