@@ -222,41 +222,59 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
 
 
     ////Example Usage for WebAPI controller 
-    //private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int> ThreadedProcessorExample = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int>(
-    //        _maxWorkItemLimitPerClient: 100 // Maximum number of concurrent requests in the processing queue per client
-    //        , _maxWorkerThreads: 16 // Maximum number of threads to scale upto
-    //        , _threadStartupPerWorkItems: 4 // Consider starting a new processing thread ever X requests
-    //        , _threadStartupMinQueueSize: 4 // Do NOT start a new processing thread if work item queue is below this size
-    //        , _idleWorkerThreadExitSeconds: 10 // Idle threads will exit after X seconds
-    //        , _abandonedResponseExpirySeconds: 60 // Expire processed work items after X seconds (Maybe the client terminated or the web request thread died)
-    //        , _processRequestMethod: ProcessRequestMethod // Your Do Work method for processing the request
-    //        , _logErrorMethod: Handler_LogError
-    //        , _logMessageMethod: Handler_LogMessage
-    //        );
-
-    //public async Task<DummyResponse> GetResponse([FromBody] DummyRequest Request)
+    //class Example
     //{
-    //    int ClientID = 1; //Replace with the client ID from your authentication mechanism
-    //    int RequestID = ThreadedProcessorExample.ScheduleWorkItem(Request, ClientID);
-    //    KeyValuePair<bool, ThreadedWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
-    //    workItemResult = await ThreadedProcessorExample.TryGetProcessedWorkItemAsync(RequestID, 1000,
-    //        _taskWaitType: ThreadProcessorAsyncTaskWaitType.Delay_Specific,
-    //        _delayMS: 10);
-    //    if (!workItemResult.Key)
+    //    private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int> ThreadedProcessorExample = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int>(
+    //            _maxWorkItemLimitPerClient: 100 // Maximum number of concurrent requests in the processing queue per client
+    //            , _maxWorkerThreads: 16 // Maximum number of threads to scale upto
+    //            , _threadStartupPerWorkItems: 4 // Consider starting a new processing thread ever X requests
+    //            , _threadStartupMinQueueSize: 4 // Do NOT start a new processing thread if work item queue is below this size
+    //            , _idleWorkerThreadExitSeconds: 10 // Idle threads will exit after X seconds
+    //            , _abandonedResponseExpirySeconds: 60 // Expire processed work items after X seconds (Maybe the client terminated or the web request thread died)
+    //            , _processRequestMethod: ProcessRequestMethod // Your Do Work method for processing the request
+    //            , _logErrorMethod: Handler_LogError
+    //            , _logMessageMethod: Handler_LogMessage
+    //            );
+
+    //    public async Task<DummyResponse> GetResponse([FromBody] DummyRequest Request)
     //    {
-    //        //Client has exceeded maximum number of concurrent requests or Application Pool is shutting down
-    //        //return a suitable error message here
-    //        return new DummyResponse() { ErrorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
+    //        int ClientID = 1; //Replace with the client ID from your authentication mechanism
+    //        int RequestID = ThreadedProcessorExample.ScheduleWorkItem(Request, ClientID);
+    //        if (RequestID < 0)
+    //        {
+    //            //Client has exceeded maximum number of concurrent requests or Application Pool is shutting down
+    //            //return a suitable error message here
+    //            return new DummyResponse() { ErrorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
+    //        }
+    //        KeyValuePair<bool, ThreadedWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
+    //        workItemResult = await ThreadedProcessorExample.TryGetProcessedWorkItemAsync(RequestID, 
+    //            _timeoutMS: 1000, //Timeout of 1 second
+    //            _taskWaitType: ThreadProcessorAsyncTaskWaitType.Delay_Specific,
+    //            _delayMS: 10);
+    //        if (!workItemResult.Key)
+    //        {
+    //            //Processing timeout or Application Pool is shutting down
+    //            //return a suitable error message here
+    //            return new DummyResponse() { ErrorMessage = @"Internal system timeout or service is restarting. Please retry request later." };
+    //        }
+    //        return workItemResult.Value.Response;
     //    }
-    //    return workItemResult.Value.Response;
-    //}
 
-    //public static DummyResponse ProcessRequestMethod(DummyRequest request)
-    //{
-    //    // Process the request and return the response
-    //    return new DummyResponse() { orderID = request.orderID };
-    //}
+    //    public static DummyResponse ProcessRequestMethod(DummyRequest request)
+    //    {
+    //        // Process the request and return the response
+    //        return new DummyResponse() { orderID = request.orderID };
+    //    }
+    //    public static void Handler_LogError(Exception ex)
+    //    {
+    //        //Log unhandled exception here
+    //    }
 
+    //    public static void Handler_LogMessage(string Message)
+    //    {
+    //        //Log message here
+    //    }
+    //}
 
     class Program
     {
