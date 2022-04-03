@@ -46,15 +46,21 @@ However managing concurrency and backend load etc... are not always as straight 
     {
         int ClientID = 1; //Replace with the client ID from your authentication mechanism
         int RequestID = ThreadedProcessorExample.ScheduleWorkItem(Request, ClientID);
+        if (RequestID < 0)
+        {
+            //Client has exceeded maximum number of concurrent requests or Application Pool is shutting down
+            //return a suitable error message here
+            return new DummyResponse() { ErrorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
+        }
         KeyValuePair<bool, ThreadedWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
         workItemResult = await ThreadedProcessorExample.TryGetProcessedWorkItemAsync(RequestID, 1000,
             _taskWaitType: ThreadProcessorAsyncTaskWaitType.Delay_Specific,
             _delayMS: 10);
         if (!workItemResult.Key)
         {
-            //Client has exceeded maximum number of concurrent requests or Application Pool is shutting down
+            //Processing timeout or Application Pool is shutting down
             //return a suitable error message here
-            return new DummyResponse() { ErrorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
+            return new DummyResponse() { ErrorMessage = @"Internal system timeout or service is restarting. Please retry request later." };
         }
         return workItemResult.Value.Response;
     }
@@ -64,6 +70,16 @@ However managing concurrency and backend load etc... are not always as straight 
         // Process the request and return the response
         return new DummyResponse() { orderID = request.orderID };
     }
+    public static void Handler_LogError(Exception ex)
+    {
+        //Log unhandled exception here
+    }
+
+    public static void Handler_LogMessage(string Message)
+    {
+        //Log message here
+    }
+
 
 
 ### Performance stats
