@@ -1,10 +1,12 @@
+
 # ChillXCommon
 
 ChillX Common is a collection of libraries encapsulating common functionality.
 Currently two libraries and tests for each are implemented:
+Libraries are Dot Net Standard 2.0 so its usable in both Dot Net Framework and Dot Net Core
 
- 1. ChillXThreading - Light Weight Multi-Threaded Atomic Unit of Work Processor
- 2. ChillXLogging - Light Weight Offloaded (to separate thread) Asyncronous Logging Framework with automatic capture of unhandled exceptions
+- ChillXThreading - Light Weight Multi-Threaded Atomic Unit of Work Processor
+- ChillXLogging - Light Weight Offloaded (to separate thread) Asyncronous Logging Framework with automatic capture of unhandled exceptions
 
 # ChillXThreading
 This library is a managed Atomic Unit Of Work processor with an auto scaling thread pool designed to support discrete unit of work processor such as API end points. Additionally it implements basic per client concurrent request limits.
@@ -19,10 +21,51 @@ However managing concurrency and backend load etc... are not always as straight 
  - Throttling the number of concurrent API calls per client
  - Completes processing of any pending request work items in case of Process Shutdown
  - In the case of Application Pool Recycle completes processing of as many pending request work items until terminated by IIS (Available time window depends on timeout settings in IIS)
+ - Gracefull shutdown when Application Pool recycles or when process exists.
 
 ### Key features
  - Built for pure performance.
  - Extremely lightweight
+
+### Example Usage
+
+    //Example Usage for WebAPI controller
+    private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int> ThreadedProcessorExample = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int>(
+            _maxWorkItemLimitPerClient: 100 // Maximum number of concurrent requests in the processing queue per client
+            , _maxWorkerThreads: 16 // Maximum number of threads to scale upto
+            , _threadStartupPerWorkItems: 4 // Consider starting a new processing thread ever X requests
+            , _threadStartupMinQueueSize: 4 // Do NOT start a new processing thread if work item queue is below this size
+            , _idleWorkerThreadExitSeconds: 10 // Idle threads will exit after X seconds
+            , _abandonedResponseExpirySeconds: 60 // Expire processed work items after X seconds (Maybe the client terminated or the web request thread died)
+            , _processRequestMethod: ProcessRequestMethod // Your Do Work method for processing the request
+            , _logErrorMethod: Handler_LogError
+            , _logMessageMethod: Handler_LogMessage
+            );
+        
+    public async Task<DummyResponse> GetResponse([FromBody] DummyRequest Request)
+    {
+        int ClientID = 1; //Replace with the client ID from your authentication mechanism
+        int RequestID = ThreadedProcessorExample.ScheduleWorkItem(Request, ClientID);
+        KeyValuePair<bool, ThreadedWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
+        workItemResult = await ThreadedProcessorExample.TryGetProcessedWorkItemAsync(RequestID, 1000,
+            _taskWaitType: ThreadProcessorAsyncTaskWaitType.Delay_Specific,
+            _delayMS: 10);
+        if (!workItemResult.Key)
+        {
+            return new DummyResponse() { orderID = -1 };
+        }
+        return workItemResult.Value.Response;
+    }
+
+    public static DummyResponse ProcessRequestMethod(DummyRequest request)
+    {
+        if (BackendAPICallMS > 0)
+        {
+            System.Threading.Thread.Sleep(BackendAPICallMS);
+        }
+        return new DummyResponse() { orderID = request.orderID };
+    }
+
 
 ### Performance stats
 
@@ -74,9 +117,12 @@ This library is a light weight, extremely fast logging framework which offloads 
 
 ### Key Features
 
- 1. Lightweight and therefore extremely fast
- 2. Disconnects the process of submitting a log entry and committing the log entry to storage
- 3. Convenience extension methods
+ - Lightweight and therefore extremely fast
+ - Disconnects the process of submitting a log entry and committing the log entry to storage
+ - Convenience extension methods
+ - Commits pending log entries in case of Process Shutdown
+ - In the case of Application Pool Recycle commits as many pending log entries until terminated by IIS (Available time window depends on timeout settings in IIS)
+ - Gracefull shutdown when Application Pool recycles or when process exists.
 
 ### Example Usage
 
