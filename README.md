@@ -61,10 +61,7 @@ However managing concurrency and backend load etc... are not always as straight 
 
     public static DummyResponse ProcessRequestMethod(DummyRequest request)
     {
-        if (BackendAPICallMS > 0)
-        {
-            System.Threading.Thread.Sleep(BackendAPICallMS);
-        }
+        // Process the request and return the response
         return new DummyResponse() { orderID = request.orderID };
     }
 
