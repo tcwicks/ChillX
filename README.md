@@ -29,9 +29,16 @@ However managing concurrency and backend load etc... are not always as straight 
 
 ### Example Usage
 
-    //Example Usage for WebAPI controller 
-    private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int> ThreadedProcessorExample = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int>(
-            _maxWorkItemLimitPerClient: 100 // Maximum number of concurrent requests in the processing queue per client
+    //Example Usage for WebAPI controller
+   public enum WorkItemPriority
+    {
+        Low = 0,
+        Medium = 1,
+        High = 2,
+    }
+    
+    private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority> ThreadedProcessorExample = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority>(
+            _maxWorkItemLimitPerClient: 100 // Maximum number of concurrent requests in the processing queue per client. Set to int.MaxValue to disable concurrent request caps
             , _maxWorkerThreads: 16 // Maximum number of threads to scale upto
             , _threadStartupPerWorkItems: 4 // Consider starting a new processing thread ever X requests
             , _threadStartupMinQueueSize: 4 // Do NOT start a new processing thread if work item queue is below this size
@@ -41,19 +48,26 @@ However managing concurrency and backend load etc... are not always as straight 
             , _logErrorMethod: Handler_LogError
             , _logMessageMethod: Handler_LogMessage
             );
-
-    public async Task<DummyResponse> GetResponse([FromBody] DummyRequest Request)
+    //[FromBody]
+    public async Task<DummyResponse> GetResponse([FromBody] DummyRequest _request)
     {
-        int ClientID = 1; //Replace with the client ID from your authentication mechanism
-        int RequestID = ThreadedProcessorExample.ScheduleWorkItem(Request, ClientID);
+        int clientID = 1; //Replace with the client ID from your authentication mechanism if using per client request caps. Otherwise just hardcode to maybe 0 or whatever
+        WorkItemPriority _priority;
+        _priority = WorkItemPriority.Medium; //Assign the priority based on whatever prioritization rules.
+        int RequestID = ThreadedProcessorExample.ScheduleWorkItem(_priority, _request, clientID);
         if (RequestID < 0)
         {
             //Client has exceeded maximum number of concurrent requests or Application Pool is shutting down
             //return a suitable error message here
             return new DummyResponse() { ErrorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
         }
-        KeyValuePair<bool, ThreadedWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
-        workItemResult = await ThreadedProcessorExample.TryGetProcessedWorkItemAsync(RequestID, 
+
+        //If you need the result (Like in a webapi controller) then do this
+        //Otherwise if it is say a backend processing sink where there is no client waiting for a response then we are done here. just return.
+
+        KeyValuePair<bool, ThreadWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
+
+        workItemResult = await ThreadedProcessorExample.TryGetProcessedWorkItemAsync(RequestID,
             _timeoutMS: 1000, //Timeout of 1 second
             _taskWaitType: ThreadProcessorAsyncTaskWaitType.Delay_Specific,
             _delayMS: 10);
@@ -80,7 +94,6 @@ However managing concurrency and backend load etc... are not always as straight 
     {
         //Log message here
     }
-
 
 
 ### Performance stats
