@@ -49,7 +49,7 @@ However managing concurrency and backend load etc... are not always as straight 
             , _logMessageMethod: Handler_LogMessage
             );
     //[FromBody]
-    public async Task<DummyResponse> GetResponse( DummyRequest _request)
+    public async Task<DummyResponse> GetResponse([FromBody] DummyRequest _request)
     {
         int clientID = 1; //Replace with the client ID from your authentication mechanism if using per client request caps. Otherwise just hardcode to maybe 0 or whatever
         WorkItemPriority _priority;
