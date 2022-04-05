@@ -737,6 +737,17 @@ namespace ChillXThreading.Complete
                         {
                             ProcessedDict.Remove(workItem.ID);
                         }
+                        IDisposable disposable;
+                        disposable = workItem.Request as IDisposable;
+                        if (disposable != null)
+                        {
+                            disposable.Dispose();
+                        }
+                        disposable = workItem.Response as IDisposable;
+                        if (disposable != null)
+                        {
+                            disposable.Dispose();
+                        }
                     }
                 }
                 if (MaxWorkItemLimitPerClientEnabled)
