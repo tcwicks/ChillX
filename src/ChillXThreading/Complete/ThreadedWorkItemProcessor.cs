@@ -113,6 +113,9 @@ namespace ChillXThreading.Complete
             OnProcessRequest = _processRequestMethod;
             OnLogError = _logErrorMethod;
             OnLogMessage = _logMessageMethod;
+
+            SWPendingWorkItemFiFOQueueOutboundRefresh.Start();
+
             StartWatchDog(true);
         }
 
@@ -192,6 +195,7 @@ namespace ChillXThreading.Complete
         }
 
         private object SyncRootQueueOutbound { get; } = new object();
+        private Stopwatch SWPendingWorkItemFiFOQueueOutboundRefresh { get; } = new Stopwatch();
         private QueueSizeCounter PendingWorkItemFiFOQueueOutboundCount { get; } = new QueueSizeCounter();
         private Dictionary<TPriority, Queue<ThreadWorkItem<TRequest, TResponse, TClientID>>> PendingWorkItemFiFOQueueOutbound { get; } = new Dictionary<TPriority, Queue<ThreadWorkItem<TRequest, TResponse, TClientID>>>();
 
@@ -208,8 +212,9 @@ namespace ChillXThreading.Complete
             {
                 lock (SyncRootQueueOutbound)
                 {
-                    if (PendingWorkItemFiFOQueueOutboundCount.Value == 0)
+                    if ((PendingWorkItemFiFOQueueOutboundCount.Value == 0) || (SWPendingWorkItemFiFOQueueOutboundRefresh.ElapsedMilliseconds > 1000))
                     {
+                        SWPendingWorkItemFiFOQueueOutboundRefresh.Restart();
                         lock (SyncRootQueueInbound)
                         {
                             foreach (KeyValuePair<TPriority, Queue<ThreadWorkItem<TRequest, TResponse, TClientID>>> queueInboundWithPriority in PendingWorkItemFiFOQueueInbound)
