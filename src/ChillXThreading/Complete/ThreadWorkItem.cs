@@ -4,10 +4,10 @@ using System.Text;
 
 namespace ChillXThreading.Complete
 {
-    public class ThreadedWorkItem<TRequest, TResponse, TClientID> : IEqualityComparer<ThreadedWorkItem<TRequest, TResponse, TClientID>>
+    public class ThreadWorkItem<TRequest, TResponse, TClientID> : IEqualityComparer<ThreadWorkItem<TRequest, TResponse, TClientID>>
         where TClientID : struct, IComparable, IFormattable, IConvertible
     {
-        public ThreadedWorkItem(TClientID _ClientID)
+        public ThreadWorkItem(TClientID _ClientID)
         {
             ClientID = _ClientID;
         }
@@ -113,14 +113,14 @@ namespace ChillXThreading.Complete
             }
         }
 
-        public bool Equals(ThreadedWorkItem<TRequest, TResponse, TClientID> x, ThreadedWorkItem<TRequest, TResponse, TClientID> y)
+        public bool Equals(ThreadWorkItem<TRequest, TResponse, TClientID> x, ThreadWorkItem<TRequest, TResponse, TClientID> y)
         {
             if ((x == null) && (y == null)) { return true; }
             if ((x == null) || (y == null)) { return false; }
             return x.ID == y.ID;
         }
 
-        public int GetHashCode(ThreadedWorkItem<TRequest, TResponse, TClientID> obj)
+        public int GetHashCode(ThreadWorkItem<TRequest, TResponse, TClientID> obj)
         {
             return obj.GetHashCode();
         }
@@ -132,8 +132,8 @@ namespace ChillXThreading.Complete
         public override bool Equals(object obj)
         {
             if (obj == null) { return false; }
-            ThreadedWorkItem<TRequest, TResponse, TClientID> TypedInstance;
-            TypedInstance = obj as ThreadedWorkItem<TRequest, TResponse, TClientID>;
+            ThreadWorkItem<TRequest, TResponse, TClientID> TypedInstance;
+            TypedInstance = obj as ThreadWorkItem<TRequest, TResponse, TClientID>;
             if (TypedInstance == null) { return false; }
             return ID == TypedInstance.ID;
         }

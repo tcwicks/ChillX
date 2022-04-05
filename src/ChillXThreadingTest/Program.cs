@@ -276,6 +276,13 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
     //    }
     //}
 
+    public enum WorkItemPriority
+    {
+        Low = 0,
+        Medium = 1,
+        High = 2,
+    }
+
     class Program
     {
         private static int BackendAPICallMS = 0;
@@ -302,8 +309,8 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
             //    );
 
             //Sleep for simulating workload
-            ThreadedProcessor = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int>(
-                _maxWorkItemLimitPerClient: 100
+            ThreadedProcessor = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority>(
+                _maxWorkItemLimitPerClient: int.MaxValue
                 , _maxWorkerThreads: 16
                 , _threadStartupPerWorkItems: 4
                 , _threadStartupMinQueueSize: 4
@@ -490,11 +497,11 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
             ThreadedProcessor.ShutDown(60);
         }
 
-        private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int> ThreadedProcessor;
+        private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority> ThreadedProcessor;
+            
+        private static Random Rnd = new Random();
         private static void Test()
         {
-            Random Rnd;
-            Rnd = new Random();
             for (int I = 0; I < 1000; I++)
             {
                 string ClientID = Rnd.Next(0, 20).ToString();
@@ -509,8 +516,6 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
 
         private static void TestThreadController()
         {
-            Random Rnd;
-            Rnd = new Random();
             for (int I = 0; I < 1000; I++)
             {
                 int ClientID = Rnd.Next(0, 20);
@@ -525,8 +530,6 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
 
         private static void TestThreadControllerAsync()
         {
-            Random Rnd;
-            Rnd = new Random();
             for (int I = 0; I < 1000; I++)
             {
                 int ClientID = Rnd.Next(0, 20);
@@ -541,10 +544,10 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
 
         public static DummyResponse GetResponse(DummyRequest DummyRequest, int ClientID)
         {
-            int RequestID = ThreadedProcessor.ScheduleWorkItem(DummyRequest, ClientID);
+            int RequestID = ThreadedProcessor.ScheduleWorkItem((WorkItemPriority)Rnd.Next(0, 2), DummyRequest, ClientID);
             if (RequestID < 0) { return new DummyResponse() { orderID = -1 }; }
 
-            ThreadedWorkItem<DummyRequest, DummyResponse, int> workItem;
+            ThreadWorkItem<DummyRequest, DummyResponse, int> workItem;
             DateTime StartTime = DateTime.Now;
             while (!ThreadedProcessor.TryGetProcessedWorkItem(RequestID, out workItem))
             {
@@ -565,8 +568,8 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
 
         public static async Task<DummyResponse> GetResponseAsync(DummyRequest DummyRequest, int ClientID)
         {
-            int RequestID = ThreadedProcessor.ScheduleWorkItem(DummyRequest, ClientID);
-            KeyValuePair<bool,ThreadedWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
+            int RequestID = ThreadedProcessor.ScheduleWorkItem((WorkItemPriority)Rnd.Next(0, 2), DummyRequest, ClientID);
+            KeyValuePair<bool,ThreadWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
             workItemResult = await ThreadedProcessor.TryGetProcessedWorkItemAsync(RequestID, 1000, WaitType, AsyncDelayMS);
             //ThreadedWorkItem<DummyRequest, DummyResponse, int> workItem;
             //while (!ThreadedProcessor.TryGetProcessedWorkItem(RequestID, out workItem))

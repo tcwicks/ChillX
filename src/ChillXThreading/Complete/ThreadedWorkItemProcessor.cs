@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,16 +27,19 @@ namespace ChillXThreading.Complete
     /// <typeparam name="TRequest">Unit of Work type of request. Example CreateOrderRequest</typeparam>
     /// <typeparam name="TResponse">Unit of Work type of response. Example CreateOrderResponse</typeparam>
     /// <typeparam name="TClientID">Client ID data type. This may be a string or an int or a guid etc...</typeparam>
-    public class ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>
+    /// <typeparam name="TPriority">Priority Enumeration for queue priorities. This must be an Enum</typeparam>
+    public class ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>
         where TClientID : struct, IComparable, IFormattable, IConvertible
+        where TPriority : struct, IComparable, IFormattable, IConvertible
     {
-        internal delegate bool Handler_GetNextPendingWorkItem(out ThreadedWorkItem<TRequest, TResponse, TClientID> workItem);
+        internal delegate bool Handler_GetNextPendingWorkItem(out ThreadWorkItem<TRequest, TResponse, TClientID> workItem);
         public delegate TResponse Handler_ProcessRequest(TRequest request);
-        public delegate void Handler_OnRequestProcessed(ThreadedWorkItem<TRequest, TResponse, TClientID> workItem);
+        public delegate void Handler_OnRequestProcessed(ThreadWorkItem<TRequest, TResponse, TClientID> workItem);
         internal delegate void Handler_OnThreadExit(int ID);
         public delegate void Handler_LogError(Exception ex);
-        public delegate void Handler_LogMessage(string Message);
+        public delegate void Handler_LogMessage(string _message);
 
+        public bool MaxWorkItemLimitPerClientEnabled { get; private set; } = true;
         public int MaxWorkItemLimitPerClient { get; private set; } = 100;
         public int MaxWorkerThreads { get; private set; } = 2;
         public int ThreadStartupDelayPerWorkItems { get; private set; } = 2;
@@ -66,7 +70,40 @@ namespace ChillXThreading.Complete
             , Handler_LogMessage _logMessageMethod
             )
         {
+            if (!typeof(TPriority).IsEnum)
+            {
+                throw new ArgumentException("TPriority must be an enumerated type");
+            }
+            List<int> PriorityValueList;
+            PriorityValueList = new List<int>();
+            foreach (int priorityValue in Enum.GetValues(typeof(TPriority)))
+            {
+                TPriority priority;
+                priority = (TPriority)(object)priorityValue;
+                PriorityValueList.Add(priorityValue);
+                PendingWorkItemFiFOQueueInbound.Add(priority, new Queue<ThreadWorkItem<TRequest, TResponse, TClientID>>());
+                PendingWorkItemFiFOQueueOutbound.Add(priority, new Queue<ThreadWorkItem<TRequest, TResponse, TClientID>>());
+            }
+            PriorityValueList.Sort();
+            while (PriorityValueList.Count > 0)
+            {
+                TPriority priority;
+                int priorityValue;
+                priorityValue = PriorityValueList[PriorityValueList.Count - 1];
+                priority = (TPriority)(object)priorityValue;
+                PriorityList.Add(priority);
+                PriorityValueList.RemoveAt(PriorityValueList.Count - 1);
+            }
+            //foreach (int priorityValue in PriorityValueList)
+            //{
+            //    TPriority priority;
+            //    //priority = (TPriority)(object)priorityValue;
+            //    priority = ToEnum<TPriority>.FromInt(priorityValue);
+            //    PriorityList.Add(priority);
+            //}
+
             MaxWorkItemLimitPerClient = Math.Max(_maxWorkItemLimitPerClient, 10);
+            MaxWorkItemLimitPerClientEnabled = MaxWorkItemLimitPerClient < int.MaxValue;
             MaxWorkerThreads = Math.Max(_maxWorkerThreads, 2);
             ThreadStartupDelayPerWorkItems = Math.Max(_threadStartupPerWorkItems, 0);
             ThreadStartupMinQueueSize = Math.Max(_threadStartupMinQueueSize, 0);
@@ -80,50 +117,54 @@ namespace ChillXThreading.Complete
         }
 
 
+        private List<TPriority> PriorityList { get; } = new List<TPriority>();
         private object SyncRootQueueInbound { get; } = new object();
         private Dictionary<TClientID, QueueSizeCounter> PendingWorkItemClientQueue { get; } = new Dictionary<TClientID, QueueSizeCounter>();
         private Dictionary<TClientID, DateTime> PendingWorkItemClientQueueActivity { get; } = new Dictionary<TClientID, DateTime>();
-        private Queue<ThreadedWorkItem<TRequest, TResponse, TClientID>> PendingWorkItemFiFOQueueInbound { get; } = new Queue<ThreadedWorkItem<TRequest, TResponse, TClientID>>();
+        private Dictionary<TPriority, Queue<ThreadWorkItem<TRequest, TResponse, TClientID>>> PendingWorkItemFiFOQueueInbound { get; } = new Dictionary<TPriority, Queue<ThreadWorkItem<TRequest, TResponse, TClientID>>>();
         private QueueSizeCounter PendingWorkItemFiFOQueueSize { get; } = new QueueSizeCounter();
         /// <summary>
         /// Schedule work item with a per client queue size cap. If shutting down or if the client queue is at capacity then returned unique ID will be -1. 
         /// If the work item was successfully queued then the return value will be a positive integer ID.
-        /// Use the ID to retrieve the processed work item <see cref="TryGetProcessedWorkItem(int, out ThreadedWorkItem{TRequest, TResponse, TClientID})"/>
+        /// Use the ID to retrieve the processed work item <see cref="TryGetProcessedWorkItem(int, out ThreadWorkItem{TRequest, TResponse, TClientID})"/>
         /// or for the Async version <see cref="TryGetProcessedWorkItemAsync(int, int, ThreadProcessorAsyncTaskWaitType, int)"/>
         /// </summary>
         /// <param name="_request">Unit of work to be processed</param>
         /// <param name="_clientID">client id for unit of work or a fixed value if not using per client max queue size caps</param>
-        /// <returns>Unique ID reference for scehduled work item. Use this ID to retrieve the processed work item reponse <see cref="TryGetProcessedWorkItem(int, out ThreadedWorkItem{TRequest, TResponse, TClientID})"/>
+        /// <returns>Unique ID reference for scehduled work item. Use this ID to retrieve the processed work item reponse <see cref="TryGetProcessedWorkItem(int, out ThreadWorkItem{TRequest, TResponse, TClientID})"/>
         /// or Async version <see cref="TryGetProcessedWorkItemAsync(int, int, ThreadProcessorAsyncTaskWaitType, int)"/>
         /// If client queue is at capacity will return -1 which means that the work item should be retried or discarded depending on the scenario
         /// </returns>
-        public int ScheduleWorkItem(TRequest _request, TClientID _clientID)
+        public int ScheduleWorkItem(TPriority _priority, TRequest _request, TClientID _clientID)
         {
             if (!IsRunning) { return -1; }
             int newWorkItemID;
             QueueSizeCounter queueCounter;
-            ThreadedWorkItem<TRequest, TResponse, TClientID> newWorkItem;
-            Queue<ThreadedWorkItem<TRequest, TResponse, TClientID>> fifoQueue;
-            newWorkItem = new ThreadedWorkItem<TRequest, TResponse, TClientID>(_clientID) { Request = _request };
+            ThreadWorkItem<TRequest, TResponse, TClientID> newWorkItem;
+            Queue<ThreadWorkItem<TRequest, TResponse, TClientID>> fifoQueue;
+            newWorkItem = new ThreadWorkItem<TRequest, TResponse, TClientID>(_clientID) { Request = _request };
             newWorkItemID = newWorkItem.ID;
             lock (SyncRootQueueInbound)
             {
-                if (!PendingWorkItemClientQueue.TryGetValue(_clientID, out queueCounter))
+                if (MaxWorkItemLimitPerClientEnabled)
                 {
-                    queueCounter = new QueueSizeCounter();
-                    PendingWorkItemClientQueue.Add(_clientID, queueCounter);
+                    if (!PendingWorkItemClientQueue.TryGetValue(_clientID, out queueCounter))
+                    {
+                        queueCounter = new QueueSizeCounter();
+                        PendingWorkItemClientQueue.Add(_clientID, queueCounter);
+                    }
+                    if (queueCounter.Value > MaxWorkItemLimitPerClient) { return -1; }
+                    if (PendingWorkItemClientQueueActivity.ContainsKey(_clientID))
+                    {
+                        PendingWorkItemClientQueueActivity[_clientID] = DateTime.Now;
+                    }
+                    else
+                    {
+                        PendingWorkItemClientQueueActivity.Add(_clientID, DateTime.Now);
+                    }
+                    queueCounter.Increment();
                 }
-                if (queueCounter.Value > MaxWorkItemLimitPerClient) { return -1; }
-                if (PendingWorkItemClientQueueActivity.ContainsKey(_clientID))
-                {
-                    PendingWorkItemClientQueueActivity[_clientID] = DateTime.Now;
-                }
-                else
-                {
-                    PendingWorkItemClientQueueActivity.Add(_clientID, DateTime.Now);
-                }
-                queueCounter.Increment();
-                PendingWorkItemFiFOQueueInbound.Enqueue(newWorkItem);
+                PendingWorkItemFiFOQueueInbound[_priority].Enqueue(newWorkItem);
                 PendingWorkItemFiFOQueueSize.Increment();
             }
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
@@ -151,41 +192,59 @@ namespace ChillXThreading.Complete
         }
 
         private object SyncRootQueueOutbound { get; } = new object();
-        private Queue<ThreadedWorkItem<TRequest, TResponse, TClientID>> PendingWorkItemFiFOQueueOutbound { get; } = new Queue<ThreadedWorkItem<TRequest, TResponse, TClientID>>();
+        private QueueSizeCounter PendingWorkItemFiFOQueueOutboundCount { get; } = new QueueSizeCounter();
+        private Dictionary<TPriority, Queue<ThreadWorkItem<TRequest, TResponse, TClientID>>> PendingWorkItemFiFOQueueOutbound { get; } = new Dictionary<TPriority, Queue<ThreadWorkItem<TRequest, TResponse, TClientID>>>();
 
         /// <summary>
         /// Called internally by <see cref="WorkThread{TRequest, TResponse, TClientID}"/>
         /// </summary>
         /// <param name="_workItem">work item (unit of work) to be processed. Null if return value is false</param>
         /// <returns>True if work item is available. Otherwise false and _workItem will be null</returns>
-        private bool GetNextPendingWorkItem(out ThreadedWorkItem<TRequest, TResponse, TClientID> _workItem)
+        private bool GetNextPendingWorkItem(out ThreadWorkItem<TRequest, TResponse, TClientID> _workItem)
         {
             QueueSizeCounter queueCounter;
-            HashSet<ThreadedWorkItem<TRequest, TResponse, TClientID>> clientQueue;
+            HashSet<ThreadWorkItem<TRequest, TResponse, TClientID>> clientQueue;
             if (PendingWorkItemFiFOQueueSize.Value > 0)
             {
                 lock (SyncRootQueueOutbound)
                 {
-                    if (PendingWorkItemFiFOQueueOutbound.Count == 0)
+                    if (PendingWorkItemFiFOQueueOutboundCount.Value == 0)
                     {
                         lock (SyncRootQueueInbound)
                         {
-                            int NumPending = PendingWorkItemFiFOQueueInbound.Count;
-                            for (int I = 0; I < NumPending; I++)
+                            foreach (KeyValuePair<TPriority, Queue<ThreadWorkItem<TRequest, TResponse, TClientID>>> queueInboundWithPriority in PendingWorkItemFiFOQueueInbound)
                             {
-                                PendingWorkItemFiFOQueueOutbound.Enqueue(PendingWorkItemFiFOQueueInbound.Dequeue());
-                            }    
+                                Queue<ThreadWorkItem<TRequest, TResponse, TClientID>> queueInbound;
+                                Queue<ThreadWorkItem<TRequest, TResponse, TClientID>> queueOutbound;
+                                queueInbound = queueInboundWithPriority.Value;
+                                queueOutbound = PendingWorkItemFiFOQueueOutbound[queueInboundWithPriority.Key];
+                                int NumPending = queueInbound.Count;
+                                for (int I = 0; I < NumPending; I++)
+                                {
+                                    queueOutbound.Enqueue(queueInbound.Dequeue());
+                                    PendingWorkItemFiFOQueueOutboundCount.Increment();
+                                }
+                            }
                         }
                     }
-                    if (PendingWorkItemFiFOQueueOutbound.Count > 0)
+                    foreach (TPriority priority in PriorityList)
                     {
-                        PendingWorkItemFiFOQueueSize.Decrement();
-                        _workItem = PendingWorkItemFiFOQueueOutbound.Dequeue();
-                        if (PendingWorkItemClientQueue.TryGetValue(_workItem.ClientID, out queueCounter))
+                        Queue<ThreadWorkItem<TRequest, TResponse, TClientID>> queueOutbound;
+                        queueOutbound = PendingWorkItemFiFOQueueOutbound[priority];
+                        if (queueOutbound.Count > 0)
                         {
-                            queueCounter.Decrement();
+                            PendingWorkItemFiFOQueueSize.Decrement();
+                            PendingWorkItemFiFOQueueOutboundCount.Decrement();
+                            _workItem = queueOutbound.Dequeue();
+                            if (MaxWorkItemLimitPerClientEnabled)
+                            {
+                                if (PendingWorkItemClientQueue.TryGetValue(_workItem.ClientID, out queueCounter))
+                                {
+                                    queueCounter.Decrement();
+                                }
+                            }
+                            return true;
                         }
-                        return true;
                     }
                 }
             }
@@ -194,8 +253,8 @@ namespace ChillXThreading.Complete
         }
 
         private object SyncLockProcessedQueue { get; } = new object();
-        private Dictionary<int, ThreadedWorkItem<TRequest, TResponse, TClientID>> ProcessedDict { get; } = new Dictionary<int, ThreadedWorkItem<TRequest, TResponse, TClientID>>();
-        private void OnRequestProcessed(ThreadedWorkItem<TRequest, TResponse, TClientID> _workItem)
+        private Dictionary<int, ThreadWorkItem<TRequest, TResponse, TClientID>> ProcessedDict { get; } = new Dictionary<int, ThreadWorkItem<TRequest, TResponse, TClientID>>();
+        private void OnRequestProcessed(ThreadWorkItem<TRequest, TResponse, TClientID> _workItem)
         {
             lock (SyncLockProcessedQueue)
             {
@@ -218,7 +277,7 @@ namespace ChillXThreading.Complete
         /// <param name="_ID">The unique ID of the work item to retrieve <see cref="ScheduleWorkItem(TRequest, TClientID)"/></param>
         /// <param name="_workItem">work item (unit of work) to be processed. Null if return value is false</param>
         /// <returns>True if processed work item is available. Otherwise false and _workItem will be null</returns>
-        public bool TryGetProcessedWorkItem(int _ID, out ThreadedWorkItem<TRequest, TResponse, TClientID> _workItem)
+        public bool TryGetProcessedWorkItem(int _ID, out ThreadWorkItem<TRequest, TResponse, TClientID> _workItem)
         {
             lock (SyncLockProcessedQueue)
             {
@@ -238,7 +297,7 @@ namespace ChillXThreading.Complete
         private Queue<Stopwatch> StopWatchPool { get; } = new Queue<Stopwatch>();
         private Stopwatch StopWatchPool_Lease()
         {
-            lock(StopWatchPoolSyncLock)
+            lock (StopWatchPoolSyncLock)
             {
                 if (StopWatchPool.Count == 0)
                 {
@@ -262,7 +321,7 @@ namespace ChillXThreading.Complete
 
         /// <summary>
         /// Call this method to retrieve processed work items (unit of work).
-        /// This is the Async implementation. For the Sync implementation <see cref="TryGetProcessedWorkItem(int, out ThreadedWorkItem{TRequest, TResponse, TClientID})"/> />
+        /// This is the Async implementation. For the Sync implementation <see cref="TryGetProcessedWorkItem(int, out ThreadWorkItem{TRequest, TResponse, TClientID})"/> />
         /// Note: this method is an Async wrapper around the Sync implementation with a configurable wait method (_taskWaitType parameter).
         /// </summary>
         /// <param name="_ID">The unique ID of the work item to retrieve <see cref="ScheduleWorkItem(TRequest, TClientID)"/></param>
@@ -270,9 +329,9 @@ namespace ChillXThreading.Complete
         /// <param name="_taskWaitType"></param>
         /// <param name="_delayMS"></param>
         /// <returns></returns>
-        public async Task<KeyValuePair<bool, ThreadedWorkItem<TRequest, TResponse, TClientID>>> TryGetProcessedWorkItemAsync(int _ID, int _timeoutMS, ThreadProcessorAsyncTaskWaitType _taskWaitType = ThreadProcessorAsyncTaskWaitType.Delay_1, int _delayMS = 1)
+        public async Task<KeyValuePair<bool, ThreadWorkItem<TRequest, TResponse, TClientID>>> TryGetProcessedWorkItemAsync(int _ID, int _timeoutMS, ThreadProcessorAsyncTaskWaitType _taskWaitType = ThreadProcessorAsyncTaskWaitType.Delay_1, int _delayMS = 1)
         {
-            ThreadedWorkItem<TRequest, TResponse, TClientID> workItem;
+            ThreadWorkItem<TRequest, TResponse, TClientID> workItem;
             if (_delayMS < 0) { _delayMS = 0; }
             if (!TryGetProcessedWorkItem(_ID, out workItem))
             {
@@ -301,7 +360,7 @@ namespace ChillXThreading.Complete
                         if (SW.ElapsedMilliseconds > _timeoutMS)
                         {
                             workItem = null;
-                            return new KeyValuePair<bool, ThreadedWorkItem<TRequest, TResponse, TClientID>>(false, workItem);
+                            return new KeyValuePair<bool, ThreadWorkItem<TRequest, TResponse, TClientID>>(false, workItem);
                         }
                     }
                 }
@@ -310,7 +369,7 @@ namespace ChillXThreading.Complete
                     StopWatchPool_Return(SW);
                 }
             }
-            return new KeyValuePair<bool, ThreadedWorkItem<TRequest, TResponse, TClientID>>(true, workItem);
+            return new KeyValuePair<bool, ThreadWorkItem<TRequest, TResponse, TClientID>>(true, workItem);
         }
 
         private object SyncLockThreadControl { get; } = new object();
@@ -319,7 +378,7 @@ namespace ChillXThreading.Complete
         {
             get
             {
-                lock(SyncLockThreadControl)
+                lock (SyncLockThreadControl)
                 {
                     return m_IsRunning;
                 }
@@ -339,7 +398,7 @@ namespace ChillXThreading.Complete
                 m_IsShutDown = true;
                 m_IsRunning = false;
             }
-            if(_timeoutSeconds < 1) { _timeoutSeconds = 1; }
+            if (_timeoutSeconds < 1) { _timeoutSeconds = 1; }
             Stopwatch SW = new Stopwatch();
             SW.Reset();
             SW.Start();
@@ -362,18 +421,18 @@ namespace ChillXThreading.Complete
                 {
                 }
             }
-            List<WorkThread<TRequest, TResponse, TClientID>> finishedThreads;
-            finishedThreads = new List<WorkThread<TRequest, TResponse, TClientID>>();
+            List<WorkThread<TRequest, TResponse, TClientID, TPriority>> finishedThreads;
+            finishedThreads = new List<WorkThread<TRequest, TResponse, TClientID, TPriority>>();
             lock (SyncLockThreadControl)
             {
-                foreach (KeyValuePair<int, WorkThread<TRequest, TResponse, TClientID>> threadItem in ThreadDict)
+                foreach (KeyValuePair<int, WorkThread<TRequest, TResponse, TClientID, TPriority>> threadItem in ThreadDict)
                 {
                     if (!threadItem.Value.IsAlive)
                     {
                         finishedThreads.Add(threadItem.Value);
                     }
                 }
-                foreach (WorkThread<TRequest, TResponse, TClientID> workThread in finishedThreads)
+                foreach (WorkThread<TRequest, TResponse, TClientID, TPriority> workThread in finishedThreads)
                 {
                     if (ThreadDict.ContainsKey(workThread.ID))
                     {
@@ -381,7 +440,7 @@ namespace ChillXThreading.Complete
                     }
                 }
             }
-            foreach (WorkThread<TRequest, TResponse, TClientID> workThread in finishedThreads)
+            foreach (WorkThread<TRequest, TResponse, TClientID, TPriority> workThread in finishedThreads)
             {
                 try
                 {
@@ -402,7 +461,7 @@ namespace ChillXThreading.Complete
             }
             lock (SyncLockThreadControl)
             {
-                foreach (KeyValuePair<int, WorkThread<TRequest, TResponse, TClientID>> threadItem in ThreadDict)
+                foreach (KeyValuePair<int, WorkThread<TRequest, TResponse, TClientID, TPriority>> threadItem in ThreadDict)
                 {
                     threadItem.Value.Exit();
                 }
@@ -417,7 +476,7 @@ namespace ChillXThreading.Complete
             }
             lock (SyncLockThreadControl)
             {
-                foreach (KeyValuePair<int, WorkThread<TRequest, TResponse, TClientID>> threadItem in ThreadDict)
+                foreach (KeyValuePair<int, WorkThread<TRequest, TResponse, TClientID, TPriority>> threadItem in ThreadDict)
                 {
                     threadItem.Value.Dispose();
                 }
@@ -429,7 +488,7 @@ namespace ChillXThreading.Complete
             PendingWorkItemFiFOQueueOutbound.Clear();
         }
 
-        private Dictionary<int, WorkThread<TRequest, TResponse, TClientID>> ThreadDict { get; } = new Dictionary<int, WorkThread<TRequest, TResponse, TClientID>>();
+        private Dictionary<int, WorkThread<TRequest, TResponse, TClientID, TPriority>> ThreadDict { get; } = new Dictionary<int, WorkThread<TRequest, TResponse, TClientID, TPriority>>();
         private int ThreadStartCounter = 0;
         /// <summary>
         /// Number of active threads. 
@@ -477,8 +536,8 @@ namespace ChillXThreading.Complete
             }
             if (doStart)
             {
-                WorkThread<TRequest, TResponse, TClientID> newWorkThread;
-                newWorkThread = new WorkThread<TRequest, TResponse, TClientID>(GetNextPendingWorkItem, OnProcessRequest, OnRequestProcessed, OnThreadExit, OnLogError, IdleWorkerThreadExitMS);
+                WorkThread<TRequest, TResponse, TClientID, TPriority> newWorkThread;
+                newWorkThread = new WorkThread<TRequest, TResponse, TClientID, TPriority>(GetNextPendingWorkItem, OnProcessRequest, OnRequestProcessed, OnThreadExit, OnLogError, IdleWorkerThreadExitMS);
                 lock (SyncLockThreadControl)
                 {
                     if (ThreadDict.Count < MaxWorkerThreads)
@@ -504,7 +563,7 @@ namespace ChillXThreading.Complete
 
         private void OnThreadExit(int _ID)
         {
-            WorkThread<TRequest, TResponse, TClientID> newWorkThread;
+            WorkThread<TRequest, TResponse, TClientID, TPriority> newWorkThread;
             bool doStart;
 
             doStart = false;
@@ -598,18 +657,18 @@ namespace ChillXThreading.Complete
         {
             if (QueueSizeAllClients() > 0)
             {
-                List<WorkThread<TRequest, TResponse, TClientID>> finishedThreads;
-                finishedThreads = new List<WorkThread<TRequest, TResponse, TClientID>>();
+                List<WorkThread<TRequest, TResponse, TClientID, TPriority>> finishedThreads;
+                finishedThreads = new List<WorkThread<TRequest, TResponse, TClientID, TPriority>>();
                 lock (SyncLockThreadControl)
                 {
-                    foreach (KeyValuePair<int, WorkThread<TRequest, TResponse, TClientID>> threadItem in ThreadDict)
+                    foreach (KeyValuePair<int, WorkThread<TRequest, TResponse, TClientID, TPriority>> threadItem in ThreadDict)
                     {
                         if (!threadItem.Value.IsRunning)
                         {
                             finishedThreads.Add(threadItem.Value);
                         }
                     }
-                    foreach (WorkThread<TRequest, TResponse, TClientID> workThread in finishedThreads)
+                    foreach (WorkThread<TRequest, TResponse, TClientID, TPriority> workThread in finishedThreads)
                     {
                         if (ThreadDict.ContainsKey(workThread.ID))
                         {
@@ -625,7 +684,7 @@ namespace ChillXThreading.Complete
                 {
                     StartWorkThread();
                 }
-                foreach (WorkThread<TRequest, TResponse, TClientID> workThread in finishedThreads)
+                foreach (WorkThread<TRequest, TResponse, TClientID, TPriority> workThread in finishedThreads)
                 {
                     try
                     {
@@ -651,14 +710,14 @@ namespace ChillXThreading.Complete
         {
             try
             {
-                List<ThreadedWorkItem<TRequest, TResponse, TClientID>> ExpiredItems = new List<ThreadedWorkItem<TRequest, TResponse, TClientID>>();
-                List<ThreadedWorkItem<TRequest, TResponse, TClientID>> AllItems = new List<ThreadedWorkItem<TRequest, TResponse, TClientID>>();
+                List<ThreadWorkItem<TRequest, TResponse, TClientID>> ExpiredItems = new List<ThreadWorkItem<TRequest, TResponse, TClientID>>();
+                List<ThreadWorkItem<TRequest, TResponse, TClientID>> AllItems = new List<ThreadWorkItem<TRequest, TResponse, TClientID>>();
                 lock (SyncLockProcessedQueue)
                 {
-                    AllItems = new List<ThreadedWorkItem<TRequest, TResponse, TClientID>>(ProcessedDict.Values);
+                    AllItems = new List<ThreadWorkItem<TRequest, TResponse, TClientID>>(ProcessedDict.Values);
                 }
                 double ExpirySeconds = AbandonedResponseExpiryMS;
-                foreach (ThreadedWorkItem<TRequest, TResponse, TClientID> workItem in AllItems)
+                foreach (ThreadWorkItem<TRequest, TResponse, TClientID> workItem in AllItems)
                 {
                     if (workItem.ResponseAge.TotalSeconds > ExpirySeconds)
                     {
@@ -667,7 +726,7 @@ namespace ChillXThreading.Complete
                 }
                 lock (SyncLockProcessedQueue)
                 {
-                    foreach (ThreadedWorkItem<TRequest, TResponse, TClientID> workItem in ExpiredItems)
+                    foreach (ThreadWorkItem<TRequest, TResponse, TClientID> workItem in ExpiredItems)
                     {
                         if (ProcessedDict.ContainsKey(workItem.ID))
                         {
@@ -675,40 +734,43 @@ namespace ChillXThreading.Complete
                         }
                     }
                 }
-                DateTime CurrentTime = DateTime.Now;
-                DateTime LastActiveTime;
-                List<TClientID> ClientIDList;
-                lock (SyncRootQueueInbound)
+                if (MaxWorkItemLimitPerClientEnabled)
                 {
-                    ClientIDList = new List<TClientID>(PendingWorkItemClientQueue.Keys);
-                    foreach (TClientID clientID in ClientIDList)
+                    DateTime CurrentTime = DateTime.Now;
+                    DateTime LastActiveTime;
+                    List<TClientID> ClientIDList;
+                    lock (SyncRootQueueInbound)
                     {
-                        if (PendingWorkItemClientQueueActivity.TryGetValue(clientID, out LastActiveTime))
+                        ClientIDList = new List<TClientID>(PendingWorkItemClientQueue.Keys);
+                        foreach (TClientID clientID in ClientIDList)
                         {
-                            if (CurrentTime.Subtract(LastActiveTime).TotalMinutes > 3)
+                            if (PendingWorkItemClientQueueActivity.TryGetValue(clientID, out LastActiveTime))
                             {
-                                if (PendingWorkItemClientQueue[clientID].Value == 0)
+                                if (CurrentTime.Subtract(LastActiveTime).TotalMinutes > 3)
                                 {
-                                    PendingWorkItemClientQueue.Remove(clientID);
-                                    if (PendingWorkItemClientQueueActivity.ContainsKey(clientID))
+                                    if (PendingWorkItemClientQueue[clientID].Value == 0)
                                     {
-                                        PendingWorkItemClientQueueActivity.Remove(clientID);
+                                        PendingWorkItemClientQueue.Remove(clientID);
+                                        if (PendingWorkItemClientQueueActivity.ContainsKey(clientID))
+                                        {
+                                            PendingWorkItemClientQueueActivity.Remove(clientID);
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    PendingWorkItemClientQueueActivity[clientID] = CurrentTime;
+                                    else
+                                    {
+                                        PendingWorkItemClientQueueActivity[clientID] = CurrentTime;
+                                    }
                                 }
                             }
                         }
-                    }
-                    ClientIDList.Clear();
-                    ClientIDList.AddRange(PendingWorkItemClientQueueActivity.Keys);
-                    foreach (TClientID clientID in ClientIDList)
-                    {
-                        if (!PendingWorkItemClientQueue.ContainsKey(clientID))
+                        ClientIDList.Clear();
+                        ClientIDList.AddRange(PendingWorkItemClientQueueActivity.Keys);
+                        foreach (TClientID clientID in ClientIDList)
                         {
-                            PendingWorkItemClientQueueActivity.Remove(clientID);
+                            if (!PendingWorkItemClientQueue.ContainsKey(clientID))
+                            {
+                                PendingWorkItemClientQueueActivity.Remove(clientID);
+                            }
                         }
                     }
                 }
@@ -755,7 +817,6 @@ namespace ChillXThreading.Complete
                 return result;
             }
         }
-
 
     }
 }

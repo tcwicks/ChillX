@@ -5,25 +5,26 @@ using System.Text;
 
 namespace ChillXThreading.Complete
 {
-    internal class WorkThread<TRequest, TResponse, TClientID> : IDisposable
+    internal class WorkThread<TRequest, TResponse, TClientID, TPriority> : IDisposable
+        where TPriority : struct, IComparable, IFormattable, IConvertible
         where TClientID : struct, IComparable, IFormattable, IConvertible
     {
         private static object SyncRoot { get; } = new object();
 
         public int ID { get; } = IdentitySequence.NextID();
 
-        private ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>.Handler_GetNextPendingWorkItem OnGetNextPendingWorkItem;
-        private ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>.Handler_ProcessRequest OnProcessRequest;
-        private ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>.Handler_OnRequestProcessed OnRequestProcessed;
-        private ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>.Handler_OnThreadExit OnThreadExit;
-        private ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>.Handler_LogError OnLogError;
+        private ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>.Handler_GetNextPendingWorkItem OnGetNextPendingWorkItem;
+        private ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>.Handler_ProcessRequest OnProcessRequest;
+        private ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>.Handler_OnRequestProcessed OnRequestProcessed;
+        private ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>.Handler_OnThreadExit OnThreadExit;
+        private ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>.Handler_LogError OnLogError;
 
         private int ExitTime;
-        public WorkThread(ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>.Handler_GetNextPendingWorkItem _OnGetNextPendingWorkItem
-            , ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>.Handler_ProcessRequest _OnProcessRequest
-            , ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>.Handler_OnRequestProcessed _OnRequestProcessed
-            , ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>.Handler_OnThreadExit _OnThreadExit
-            , ThreadedWorkItemProcessor<TRequest, TResponse, TClientID>.Handler_LogError _OnLogError
+        public WorkThread(ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>.Handler_GetNextPendingWorkItem _OnGetNextPendingWorkItem
+            , ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>.Handler_ProcessRequest _OnProcessRequest
+            , ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>.Handler_OnRequestProcessed _OnRequestProcessed
+            , ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>.Handler_OnThreadExit _OnThreadExit
+            , ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>.Handler_LogError _OnLogError
             , int _ExitTime = 100)
         {
             OnGetNextPendingWorkItem = _OnGetNextPendingWorkItem;
@@ -114,7 +115,7 @@ namespace ChillXThreading.Complete
                 {
                     //For profiling only
                     //SWActive.Start();
-                    ThreadedWorkItem<TRequest, TResponse, TClientID> workItem;
+                    ThreadWorkItem<TRequest, TResponse, TClientID> workItem;
                     bool hasRequest;
                     hasRequest = OnGetNextPendingWorkItem(out workItem);
 
