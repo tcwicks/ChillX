@@ -75,6 +75,46 @@ namespace ChillXThreading.Complete
             }
         }
 
+        private bool m_IsError = false;
+        public bool IsError
+        {
+            get 
+            {
+                lock (this)
+                {
+                    return m_IsError;
+                }
+            }
+            internal set
+            {
+                lock(this)
+                {
+                    m_IsError = value;
+                }
+
+            }
+        }
+
+        private Exception m_ErrorException = null;
+        public Exception ErrorException
+        {
+            get
+            {
+                lock( this)
+                {
+                    return m_ErrorException;
+                }
+            }
+            internal set
+            {
+                lock(this)
+                {
+                    m_ErrorException = value;
+                    m_IsError = (value != null);
+                }
+            }
+        }
+
         private DateTime m_ResponseCompleteTime = DateTime.MinValue;
         /// <summary>
         /// Timestamp in local server time of when the processed response was assigned

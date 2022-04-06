@@ -162,27 +162,39 @@ namespace ChillXThreading.Complete
                         try
                         {
                             workItem.Response = OnProcessRequest(workItem.Request);
-                            try
-                            {
-                                OnRequestProcessed(workItem);
-                            }
-                            catch (Exception ex2)
-                            {
-                                try
-                                {
-                                    OnLogError(new Exception(@"Error int OnRequestProcessed() handler for work item request. See inner exception.", ex2));
-                                }
-                                catch
-                                {
-
-                                }
-                            }
                         }
-                        catch (Exception ex)
+                        catch (Exception ex2)
                         {
                             try
                             {
-                                OnLogError(new Exception(@"Error calling OnProcessRequest() handler for work item request. See inner exception.", ex));
+                                workItem.Response = default(TResponse);
+                                workItem.ErrorException = ex2;
+                                workItem.IsError = true;
+                                OnRequestProcessed(workItem);
+                                OnLogError(new Exception(@"Error calling OnProcessRequest() handler for work item request. See inner exception.", ex2));
+                                try
+                                {
+
+                                }
+                                catch (Exception ex3)
+                                {
+                                    OnLogError(new Exception(@"Unknown error In work thread controller. See inner exception.", ex3));
+                                }
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                        try
+                        {
+                            OnRequestProcessed(workItem);
+                        }
+                        catch (Exception ex2)
+                        {
+                            try
+                            {
+                                OnLogError(new Exception(@"Error int OnRequestProcessed() handler for work item request. See inner exception.", ex2));
                             }
                             catch
                             {
@@ -192,11 +204,11 @@ namespace ChillXThreading.Complete
                     }
                 }
             }
-            catch (Exception ex2)
+            catch (Exception ex)
             {
                 try
                 {
-                    OnLogError(new Exception(@"Unknown error In work thread controller. See inner exception.", ex2));
+                    OnLogError(new Exception(@"Unknown error In work thread controller. See inner exception.", ex));
                 }
                 catch
                 {
