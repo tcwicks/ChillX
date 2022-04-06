@@ -61,7 +61,7 @@ namespace ChillXThreading.Complete
         /// <param name="_threadStartupPerWorkItems">Auto Scale UP: Will consider starting a new thread after every _ThreadStartupPerWorkItems work items scheduled</param>
         /// <param name="_threadStartupMinQueueSize">Auto Scale UP: Will only consider staring a new thread of the work item buffer across all clients is larger than this</param>
         /// <param name="_idleWorkerThreadExitSeconds">Auto Scale DOWN: Worker threads which are idle for longer than this number of seconds will exit</param>
-        /// <param name="_abandonedResponseExpirySeconds">If a completed work item is not picked up because maybe the requesting thread crashed then it will be abandoned and removed from the outbound queue after this number of seconds</param>
+        /// <param name="_abandonedResponseExpirySeconds">If this value is <= 0 then processed work items will be disposed and discarded. Else if a completed work item is not picked up because maybe the requesting thread crashed then it will be abandoned and removed from the outbound queue after this number of seconds</param>
         /// <param name="_processRequestMethod">Delegate for processing work items. This is your Do Work method</param>
         /// <param name="_logErrorMethod">Delegate for logging unhandled expcetions while trying to process work items</param>
         /// <param name="_logMessageMethod">Delegate for logging info messages</param>
