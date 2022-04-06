@@ -46,6 +46,7 @@ namespace ChillXThreading.Complete
         public int ThreadStartupMinQueueSize { get; private set; } = 2;
         public int IdleWorkerThreadExitMS { get; private set; } = 1000;
         public int AbandonedResponseExpiryMS { get; private set; } = 60000;
+        public bool DiscardCompletedWorkItems { get; private set; } = false;
         private Handler_ProcessRequest OnProcessRequest;
         private Handler_LogError OnLogError;
         private Handler_LogMessage OnLogMessage;
@@ -108,7 +109,8 @@ namespace ChillXThreading.Complete
             ThreadStartupDelayPerWorkItems = Math.Max(_threadStartupPerWorkItems, 0);
             ThreadStartupMinQueueSize = Math.Max(_threadStartupMinQueueSize, 0);
             IdleWorkerThreadExitMS = Math.Max(_idleWorkerThreadExitSeconds, 1) * 1000;
-            AbandonedResponseExpiryMS = Math.Max(_abandonedResponseExpirySeconds, 10) * 1000;
+            AbandonedResponseExpiryMS = _abandonedResponseExpirySeconds * 1000;
+            DiscardCompletedWorkItems = (_abandonedResponseExpirySeconds <= 0);
 
             OnProcessRequest = _processRequestMethod;
             OnLogError = _logErrorMethod;
@@ -261,15 +263,46 @@ namespace ChillXThreading.Complete
         private Dictionary<int, ThreadWorkItem<TRequest, TResponse, TClientID>> ProcessedDict { get; } = new Dictionary<int, ThreadWorkItem<TRequest, TResponse, TClientID>>();
         private void OnRequestProcessed(ThreadWorkItem<TRequest, TResponse, TClientID> _workItem)
         {
-            lock (SyncLockProcessedQueue)
+            if (DiscardCompletedWorkItems)
             {
-                if (ProcessedDict.ContainsKey(_workItem.ID))
+                IDisposable disposable;
+                try
                 {
-                    ProcessedDict[_workItem.ID] = _workItem;
+                    disposable = _workItem.Request as IDisposable;
+                    if (disposable != null)
+                    {
+                        disposable.Dispose();
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    ProcessedDict.Add(_workItem.ID, _workItem);
+                    OnLogError(ex);
+                }
+                try
+                {
+                    disposable = _workItem.Response as IDisposable;
+                    if (disposable != null)
+                    {
+                        disposable.Dispose();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    OnLogError(ex);
+                }
+            }
+            else
+            {
+                lock (SyncLockProcessedQueue)
+                {
+                    if (ProcessedDict.ContainsKey(_workItem.ID))
+                    {
+                        ProcessedDict[_workItem.ID] = _workItem;
+                    }
+                    else
+                    {
+                        ProcessedDict.Add(_workItem.ID, _workItem);
+                    }
                 }
             }
         }
