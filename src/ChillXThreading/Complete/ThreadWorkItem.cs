@@ -60,6 +60,11 @@ namespace ChillXThreading.Complete
             }
         }
 
+        /// <summary>
+        /// Custom variables can be attached here
+        /// </summary>
+        public object[] Parameters { get; set; }
+
         private bool m_IsComplete = false;
         /// <summary>
         /// True of the work item request has been processed and a response has been assigned. <see cref="Response"/>

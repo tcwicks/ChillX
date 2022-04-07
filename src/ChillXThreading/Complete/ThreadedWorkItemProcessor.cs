@@ -140,7 +140,7 @@ namespace ChillXThreading.Complete
         /// or Async version <see cref="TryGetProcessedWorkItemAsync(int, int, ThreadProcessorAsyncTaskWaitType, int)"/>
         /// If client queue is at capacity will return -1 which means that the work item should be retried or discarded depending on the scenario
         /// </returns>
-        public int ScheduleWorkItem(TPriority _priority, TRequest _request, TClientID _clientID)
+        public int ScheduleWorkItem(TPriority _priority, TRequest _request, TClientID _clientID, params object[] parameters)
         {
             if (!IsRunning) { return -1; }
             int newWorkItemID;
@@ -148,6 +148,7 @@ namespace ChillXThreading.Complete
             ThreadWorkItem<TRequest, TResponse, TClientID> newWorkItem;
             Queue<ThreadWorkItem<TRequest, TResponse, TClientID>> fifoQueue;
             newWorkItem = new ThreadWorkItem<TRequest, TResponse, TClientID>(_clientID) { Request = _request };
+            newWorkItem.Parameters = parameters;
             newWorkItemID = newWorkItem.ID;
             lock (SyncRootQueueInbound)
             {
