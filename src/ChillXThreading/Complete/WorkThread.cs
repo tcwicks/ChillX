@@ -7,7 +7,7 @@ namespace ChillXThreading.Complete
 {
     internal class WorkThread<TRequest, TResponse, TClientID, TPriority> : IDisposable
         where TPriority : struct, IComparable, IFormattable, IConvertible
-        where TClientID : struct, IComparable, IFormattable, IConvertible
+        where TClientID : IComparable, IFormattable, IConvertible
     {
         private static object SyncRoot { get; } = new object();
 

@@ -29,7 +29,7 @@ namespace ChillXThreading.Complete
     /// <typeparam name="TClientID">Client ID data type. This may be a string or an int or a guid etc...</typeparam>
     /// <typeparam name="TPriority">Priority Enumeration for queue priorities. This must be an Enum</typeparam>
     public class ThreadedWorkItemProcessor<TRequest, TResponse, TClientID, TPriority>
-        where TClientID : struct, IComparable, IFormattable, IConvertible
+        where TClientID : IComparable, IFormattable, IConvertible
         where TPriority : struct, IComparable, IFormattable, IConvertible
     {
         internal delegate bool Handler_GetNextPendingWorkItem(out ThreadWorkItem<TRequest, TResponse, TClientID> workItem);
