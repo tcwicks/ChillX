@@ -5,7 +5,7 @@ using System.Text;
 namespace ChillXThreading.Complete
 {
     public class ThreadWorkItem<TRequest, TResponse, TClientID> : IEqualityComparer<ThreadWorkItem<TRequest, TResponse, TClientID>>
-        where TClientID : IComparable, IFormattable, IConvertible
+        where TClientID : IComparable, IConvertible
     {
         public ThreadWorkItem(TClientID _ClientID)
         {

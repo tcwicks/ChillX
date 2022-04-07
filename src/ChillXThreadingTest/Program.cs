@@ -328,6 +328,9 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
                 , _logMessageMethod: Handler_LogMessage
                 );
 
+
+            ThreadedWorkItemProcessor<DummyRequest, DummyResponse, string, WorkItemPriority> blah;
+
             BackendAPICallMS = 0;
             Stopwatch SW;
             SW = new Stopwatch();
