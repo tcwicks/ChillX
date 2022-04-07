@@ -514,9 +514,13 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
         {
             for (int I = 0; I < 1000; I++)
             {
-                string ClientID = Rnd.Next(0, 20).ToString();
+                int ClientID = Rnd.Next(0, 20);
                 DummyResponse response;
-                response = ProcessRequest(new DummyRequest() { orderID = I });
+                ThreadWorkItem<DummyRequest, DummyResponse, int> workItem;
+                workItem = new ThreadWorkItem<DummyRequest, DummyResponse, int>(ClientID);
+                workItem.Request = new DummyRequest() { orderID = Rnd.Next(0, 20) };
+
+                response = ProcessRequest(workItem);
                 if (response.orderID != I)
                 {
                     Console.WriteLine(string.Concat(@"Request Response ID Missmatch:- RequestID: ", I.ToString(), @" - ResponseID: ", response.orderID.ToString()));
@@ -611,13 +615,13 @@ namespace ChillXThreadingTest // Note: actual namespace depends on the project n
             return new DummyResponse() { orderID = -1 };
         }
 
-        public static DummyResponse ProcessRequest(DummyRequest request)
+        public static DummyResponse ProcessRequest(ThreadWorkItem<DummyRequest, DummyResponse, int> _workitem)
         {
             if (BackendAPICallMS > 0)
             {
                 System.Threading.Thread.Sleep(BackendAPICallMS);
             }
-            return new DummyResponse() { orderID = request.orderID };
+            return new DummyResponse() { orderID = _workitem.Request.orderID };
         }
 
 

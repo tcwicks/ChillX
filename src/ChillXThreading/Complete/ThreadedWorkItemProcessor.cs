@@ -33,7 +33,7 @@ namespace ChillXThreading.Complete
         where TPriority : struct, IComparable, IFormattable, IConvertible
     {
         internal delegate bool Handler_GetNextPendingWorkItem(out ThreadWorkItem<TRequest, TResponse, TClientID> workItem);
-        public delegate TResponse Handler_ProcessRequest(TRequest request);
+        public delegate TResponse Handler_ProcessRequest(ThreadWorkItem<TRequest, TResponse, TClientID> request);
         public delegate void Handler_OnRequestProcessed(ThreadWorkItem<TRequest, TResponse, TClientID> workItem);
         internal delegate void Handler_OnThreadExit(int ID);
         public delegate void Handler_LogError(Exception ex);

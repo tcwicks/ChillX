@@ -161,7 +161,7 @@ namespace ChillXThreading.Complete
                         SWSleepTimer.Reset();
                         try
                         {
-                            workItem.Response = OnProcessRequest(workItem.Request);
+                            workItem.Response = OnProcessRequest(workItem);
                         }
                         catch (Exception ex2)
                         {
