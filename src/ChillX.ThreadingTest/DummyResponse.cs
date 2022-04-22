@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChillXThreadingTest
+namespace ChillX.ThreadingTest
 {
-    internal struct DummyRequest
+    internal struct DummyResponse
     {
         public int orderID;
     }

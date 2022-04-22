@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace ChillXLogging
+namespace ChillX.Logging
 {
     public struct LogEntry
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace ChillXThreading.Complete
+namespace ChillX.Threading.Complete
 {
     internal class WorkThread<TRequest, TResponse, TClientID, TPriority> : IDisposable
         where TPriority : struct, IComparable, IFormattable, IConvertible

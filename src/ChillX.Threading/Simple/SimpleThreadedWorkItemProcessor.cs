@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace ChillXThreading.Simple
+namespace ChillX.Threading.Simple
 {
     /// <summary>
     /// Auto scaling thread pool for Unit Of Work processing

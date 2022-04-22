@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChillXThreading.Simple
+namespace ChillX.Threading.Simple
 {
     internal class SimpleWorkThread<TRequest, TResponse, TClientID> :IDisposable
         where TRequest : class, new()

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChillXLogging
+namespace ChillX.Logging
 {
     public static class ExtensionMethods
     {

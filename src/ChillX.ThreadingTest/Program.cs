@@ -1,9 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
 //Console.WriteLine("Hello, World!");
-using ChillXThreading.Complete;
+using ChillX.Threading.Complete;
 using System.Diagnostics;
 
-namespace ChillXThreadingTest // Note: actual namespace depends on the project name.
+namespace ChillX.ThreadingTest // Note: actual namespace depends on the project name.
 {
     //Comments: For tightly coupled workloads which process rapidly Sync performance will be better than Async performance
     //This is most likely because for these workloads the context switch cost of the Async CPU yield is higher than the benefit of the Async CPU yield

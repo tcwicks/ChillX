@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace ChillXLogging.Handlers
+namespace ChillX.Logging.Handlers
 {
     public class LogHandlerFile : ILogHandler, IDisposable
     {

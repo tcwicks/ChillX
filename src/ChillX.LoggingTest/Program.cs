@@ -1,10 +1,10 @@
 ﻿// See https://aka.ms/new-console-template for more information
 //Console.WriteLine("Hello, World!");
-using ChillXLogging;
+using ChillX.Logging;
 using System.Diagnostics;
 using System.Text;
 
-namespace ChillXLoggingTest
+namespace ChillX.LoggingTest
 {
     class Program
     {
@@ -15,12 +15,12 @@ namespace ChillXLoggingTest
 
         private static void TestLogger()
         {
-            ChillXLogging.Handlers.LogHandlerFile FileLogHandler_RolloverByCount;
-            FileLogHandler_RolloverByCount = new ChillXLogging.Handlers.LogHandlerFile(@"C:\Temp\LogTestByCount",
+            ChillX.Logging.Handlers.LogHandlerFile FileLogHandler_RolloverByCount;
+            FileLogHandler_RolloverByCount = new ChillX.Logging.Handlers.LogHandlerFile(@"C:\Temp\LogTestByCount",
                 _fileNamePrepend: @"ByCount_", _fileExtension: @".txt", _fileRollOverPerEntries: 10000, _fileRollOverDays: 99, _fileRollOverHours: 1, _fileRollOverMinutes: 1);
 
-            ChillXLogging.Handlers.LogHandlerFile FileLogHandler_RolloverByTime;
-            FileLogHandler_RolloverByTime = new ChillXLogging.Handlers.LogHandlerFile(@"C:\Temp\LogTestByTime",
+            ChillX.Logging.Handlers.LogHandlerFile FileLogHandler_RolloverByTime;
+            FileLogHandler_RolloverByTime = new ChillX.Logging.Handlers.LogHandlerFile(@"C:\Temp\LogTestByTime",
                 _fileNamePrepend: @"ByCount_", _fileExtension: @".txt", _fileRollOverPerEntries: int.MaxValue, _fileRollOverDays: 0, _fileRollOverHours: 0, _fileRollOverMinutes: 1);
 
             Logger.BatchSize = 100;
