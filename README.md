@@ -1,7 +1,7 @@
 
-# ChillXCommon
+# ChillX
 
-ChillX Common is a collection of libraries encapsulating common functionality.
+ChillX is a collection of libraries encapsulating common functionality.
 Currently two libraries and tests for each are implemented:
 Libraries are Dot Net Standard 2.0 so its usable in both Dot Net Framework and Dot Net Core
 
