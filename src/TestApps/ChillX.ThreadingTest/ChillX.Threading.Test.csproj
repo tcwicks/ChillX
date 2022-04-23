@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ChillX.Logging\ChillX.Logging.csproj" />
+    <ProjectReference Include="..\..\ChillX.Threading\ChillX.Threading.csproj" />
   </ItemGroup>
 
 </Project>
