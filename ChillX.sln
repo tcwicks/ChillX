@@ -5,13 +5,21 @@ VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.Logging", "src\ChillX.Logging\ChillX.Logging.csproj", "{B3DC9EDC-16A1-43B1-8FAA-7A3157DE9520}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.LoggingTest", "src\ChillX.LoggingTest\ChillX.LoggingTest.csproj", "{9BC4AA7B-129B-4BC9-82CC-497CE7247F16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.Logging.Test", "src\ChillX.LoggingTest\ChillX.Logging.Test.csproj", "{9BC4AA7B-129B-4BC9-82CC-497CE7247F16}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.Threading", "src\ChillX.Threading\ChillX.Threading.csproj", "{A895CF57-BCA0-4C75-8D8B-F215131BCC84}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.ThreadingTest", "src\ChillX.ThreadingTest\ChillX.ThreadingTest.csproj", "{ABA19F87-593E-4F14-8C67-122F2AA8A90C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.Threading.Test", "src\ChillX.ThreadingTest\ChillX.Threading.Test.csproj", "{ABA19F87-593E-4F14-8C67-122F2AA8A90C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{000E7125-66EB-4595-9B29-C0A9B306E8E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChillX.Core", "src\ChillX.Core\ChillX.Core.csproj", "{37BC1D2E-6B0B-4F8C-B9D1-2703A208DDCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChillX.Serialization", "src\ChillX.Serialization\ChillX.Serialization.csproj", "{939F5B45-BBA9-456D-B213-6E0D187421F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChillX.Serialization.Test", "src\TestApps\ChillX.SerializationTest\ChillX.Serialization.Test.csproj", "{1676244E-493D-4CC1-A390-F42E3153C8BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChillX.Serialization.Benchmark", "src\TestApps\ChillX.Serialization.Benchmark\ChillX.Serialization.Benchmark.csproj", "{CF20AADD-830E-4777-9944-74E4637D898D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +43,22 @@ Global
 		{ABA19F87-593E-4F14-8C67-122F2AA8A90C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABA19F87-593E-4F14-8C67-122F2AA8A90C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABA19F87-593E-4F14-8C67-122F2AA8A90C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37BC1D2E-6B0B-4F8C-B9D1-2703A208DDCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37BC1D2E-6B0B-4F8C-B9D1-2703A208DDCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37BC1D2E-6B0B-4F8C-B9D1-2703A208DDCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37BC1D2E-6B0B-4F8C-B9D1-2703A208DDCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{939F5B45-BBA9-456D-B213-6E0D187421F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{939F5B45-BBA9-456D-B213-6E0D187421F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{939F5B45-BBA9-456D-B213-6E0D187421F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{939F5B45-BBA9-456D-B213-6E0D187421F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1676244E-493D-4CC1-A390-F42E3153C8BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1676244E-493D-4CC1-A390-F42E3153C8BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1676244E-493D-4CC1-A390-F42E3153C8BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1676244E-493D-4CC1-A390-F42E3153C8BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF20AADD-830E-4777-9944-74E4637D898D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF20AADD-830E-4777-9944-74E4637D898D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF20AADD-830E-4777-9944-74E4637D898D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF20AADD-830E-4777-9944-74E4637D898D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -42,6 +66,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{9BC4AA7B-129B-4BC9-82CC-497CE7247F16} = {000E7125-66EB-4595-9B29-C0A9B306E8E9}
 		{ABA19F87-593E-4F14-8C67-122F2AA8A90C} = {000E7125-66EB-4595-9B29-C0A9B306E8E9}
+		{1676244E-493D-4CC1-A390-F42E3153C8BE} = {000E7125-66EB-4595-9B29-C0A9B306E8E9}
+		{CF20AADD-830E-4777-9944-74E4637D898D} = {000E7125-66EB-4595-9B29-C0A9B306E8E9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E5E60B8-82E0-44EA-B50F-56B502108691}

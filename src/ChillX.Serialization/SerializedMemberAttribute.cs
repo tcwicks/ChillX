@@ -23,10 +23,16 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChillX.Logging
+namespace ChillX.Serialization
 {
-    public interface ILogHandler: IDisposable
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    public sealed class LightSpeedSerializeAttribute : Attribute
     {
-        void WriteLogEntries(IEnumerable<LogEntry> _entries);
+        public readonly UInt16 Index;
+
+        public LightSpeedSerializeAttribute(UInt16 index)
+        {
+            this.Index = index;
+        }
     }
 }

@@ -20,16 +20,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 
-namespace ChillX.Threading
+namespace ChillX.Core.Structures
 {
-    internal static class IdentitySequence
+    public class ThreadsafeCounter
     {
-        private const int MaxValue = int.MaxValue - 100000;
-        private static volatile int _value = 0;
-        private static object _lock = new object();
-        public static int Value
+        public ThreadsafeCounter(int _minValue = 0, int _maxValue = 1000000)
+        {
+            m_MinValue = _minValue;
+            m_MaxValue = _maxValue - 1;
+        }
+        private int m_MinValue = 1;
+        public int MinValue { get { return m_MinValue; } }
+        private int m_MaxValue = 100000;
+        public int MaxValue { get { return m_MaxValue; } }
+
+        private volatile int _value = 0;
+        public int Value
         {
             get { return _value; }
             set
@@ -38,17 +48,17 @@ namespace ChillX.Threading
             }
         }
 
-        public static int NextID()
+        public virtual int NextID()
         {
             int result = Interlocked.Increment(ref _value);
-            if (result > MaxValue)
+            if (result > m_MaxValue)
             {
-                lock (_lock)
+                lock (this)
                 {
                     result = _value;
-                    if (result > MaxValue)
+                    if (result > m_MaxValue)
                     {
-                        Interlocked.Exchange(ref _value, 0);
+                        Interlocked.Exchange(ref _value, MinValue);
                     }
                 }
                 result = Interlocked.Increment(ref _value);
@@ -57,4 +67,5 @@ namespace ChillX.Threading
         }
 
     }
+
 }

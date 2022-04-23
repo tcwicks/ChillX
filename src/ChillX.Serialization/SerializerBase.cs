@@ -23,10 +23,17 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChillX.Logging
+namespace ChillX.Serialization
 {
-    public interface ILogHandler: IDisposable
+    public abstract class SerializerBase
     {
-        void WriteLogEntries(IEnumerable<LogEntry> _entries);
+        protected const int ByteSizeHeader = sizeof(int) + sizeof(bool) + sizeof(UInt16) + sizeof(UInt16);
+        protected const int ByteSizeHeaderBlockAttribute = sizeof(UInt16);
+        protected const int ByteSizeHeaderBlockSize = sizeof(int);
+        protected const int ByteSizeHeaderBlockFlag = sizeof(bool);
+
+        protected readonly byte DataTrueFlag = BitConverter.GetBytes(true)[0];
+        protected readonly byte DataFalseFlag = BitConverter.GetBytes(false)[0];
+
     }
 }
