@@ -26,6 +26,7 @@ Notice: This bencmark app uses Messagepack purely for performance comparison
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
+using ChillX.Core.Structures;
 using System;
 using System.Diagnostics;
 
@@ -35,6 +36,27 @@ namespace ChillX.Serialization.Benchmark
     {
         static void Main(string[] args)
         {
+            //string TestString = @"The quick brown fox jumped over the lazy dog";
+            //byte[] buffer;
+            //char[] charArray = TestString.ToCharArray();
+            //int numBytes = charArray.Length * 2;
+            //buffer = new byte[numBytes];
+            //for (int I = 0; I < 10; I++)
+            //{
+            //    numBytes = BitConverterExtended.GetBytes(charArray, buffer, 0);
+            //}
+            //string Deserialized;
+            //charArray = TestString.ToCharArray();
+            //numBytes = charArray.Length * 2;
+            //buffer = new byte[numBytes];
+            //numBytes = BitConverterExtended.GetBytes(charArray, buffer, 0);
+            //for (int I = 0; I < 10; I++)
+            //{
+            //    charArray = BitConverterExtended.ToCharArray(buffer, 0, numBytes);
+            //    Deserialized = new string(charArray);
+            //}
+
+
             //SanityCheck();
             //var summary = BenchmarkRunner.Run(typeof(Bench_QueueOverhead),
             //    DefaultConfig.Instance.AddDiagnoser(MemoryDiagnoser.Default)

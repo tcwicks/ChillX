@@ -23,16 +23,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChillX.Serialization
+namespace ChillX.Core.CapabilityInterfaces
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
-    public sealed class SerializedEntityAttribute : Attribute
+    public interface ISupportPooling : ISupportExpiry
     {
-        public readonly UInt16 Index;
-
-        public SerializedEntityAttribute(UInt16 index)
-        {
-            this.Index = index;
-        }
+        bool IsRented { get; }
+        void OnRented(int capacity);
+        void OnReturned();
     }
 }

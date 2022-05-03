@@ -26,11 +26,11 @@ using System.Text;
 namespace ChillX.Serialization
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
-    public sealed class LightSpeedSerializeAttribute : Attribute
+    public sealed class SerializedMemberAttribute : Attribute
     {
         public readonly UInt16 Index;
 
-        public LightSpeedSerializeAttribute(UInt16 index)
+        public SerializedMemberAttribute(UInt16 index)
         {
             this.Index = index;
         }

@@ -1,4 +1,26 @@
-﻿using System;
+﻿/*
+ChillX Framework Library
+Copyright (C) 2022  Tikiri Chintana Wickramasingha 
+
+Contact Details: (info at chillx dot com)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+using ChillX.Core.CapabilityBase;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -7,78 +29,78 @@ namespace ChillX.Core.Structures
 {
     public class ThreadSafeQueue<T>
     {
-        private class Node<N>
-        {
-            public Node<N> Next;
-            public N Item;
-        }
-
-        private static bool CompareExchange(ref Node<T> location, Node<T> newNode, Node<T> originalNode)
-        {
-            return
-                object.ReferenceEquals(originalNode,Interlocked.CompareExchange<Node<T>>(ref location, newNode, originalNode));
-        }
-
-        private volatile int m_QueueSize = 0;
-        public int QueueSize { get { return m_QueueSize; } }
-
-        private Node<T> head;
-        private Node<T> tail;
-
+        private Queue<T> m_Queue = new Queue<T>();
+        private ReaderWriterLockSlim m_Lock = new ReaderWriterLockSlim();
         public ThreadSafeQueue()
         {
-            head = new Node<T>();
-            tail = head;
+
         }
 
         public void Enqueue(T item)
         {
-            Node<T> originalTail = null;
-            Node<T> originalTailNext;
-
-            Node<T> newNodeToInsert = new Node<T>();
-            newNodeToInsert.Item = item;
-
-            bool newNodeWasAdded = false;
-            while (!newNodeWasAdded)
+            m_Lock.EnterWriteLock();
+            try
             {
-                originalTail = tail;
-                originalTailNext = originalTail.Next;
-
-                if (tail == originalTail)
-                {
-                    if (originalTailNext == null)
-                        newNodeWasAdded = CompareExchange(ref tail.Next, newNodeToInsert, null);
-                    else
-                        CompareExchange(ref tail, originalTailNext, originalTail);
-                }
+                m_Queue.Enqueue(item);
             }
-            Interlocked.Increment(ref m_QueueSize);
-            CompareExchange(ref tail, newNodeToInsert, originalTail);
+            finally
+            {
+                m_Lock.ExitWriteLock();
+            }
         }
 
         public void Clear()
         {
-            // This would work but we cannot then guarantee that QueueSize would be accurate.
-            // Two Interlocked statements is never atomic and the last thing we want to do here is to add locks
-            //Interlocked.Exchange(ref tail, head);
-            //Interlocked.Exchange(ref m_QueueSize, 0);
-
-            //next best alternative. Spin in a tight loop and dequeue
-            bool mightHaveMore = true;
-            while (mightHaveMore) { DeQueue(out mightHaveMore); }
+            m_Lock.EnterWriteLock();
+            try
+            {
+                m_Queue.Clear();
+            }
+            finally
+            {
+                m_Lock.ExitWriteLock();
+            }
+        }
+        public int Count 
+        {
+            get 
+            {
+                m_Lock.EnterReadLock();
+                try
+                {
+                    return m_Queue.Count;
+                }
+                finally
+                {
+                    m_Lock.ExitReadLock();
+                }
+            } 
         }
 
         public bool HasItems()
         {
-            return m_QueueSize > 0;
+            m_Lock.EnterReadLock();
+            try
+            {
+                return m_Queue.Count > 0;
+            }
+            finally
+            {
+                m_Lock.ExitReadLock();
+            }
         }
-
         public bool IsEmpty()
         {
-            return m_QueueSize == 0;
+            m_Lock.EnterReadLock();
+            try
+            {
+                return m_Queue.Count == 0;
+            }
+            finally
+            {
+                m_Lock.ExitReadLock();
+            }
         }
-
         public T GetDefault()
         {
             return default(T);
@@ -86,76 +108,81 @@ namespace ChillX.Core.Structures
 
         public T DeQueue(out bool Success)
         {
-            bool deQueueSuccess = false;
-            Node<T> originalHead = null;
-            T deQueuedNode = default(T);
-
-            while (!deQueueSuccess)
+            Success = true;
+            m_Lock.EnterWriteLock();
+            try
             {
-
-                originalHead = head;
-                Node<T> originalTail = tail;
-                Node<T> originalHeadNext = originalHead.Next;
-
-                if (originalHead == head)
+                if (m_Queue.Count > 0)
                 {
-                    if (originalHead == originalTail)
-                    {
-                        if (originalHeadNext == null)
-                        {
-                            Success = false;
-                            return default(T);
-                        }
-                        CompareExchange(ref tail, originalHeadNext, originalTail);
-                    }
-
-                    else
-                    {
-                        deQueuedNode = originalHeadNext.Item;
-                        deQueueSuccess =
-                        CompareExchange(ref head, originalHeadNext, originalHead);
-                    }
+                    return m_Queue.Dequeue();
                 }
             }
-            Interlocked.Decrement(ref m_QueueSize);
-            Success = true;
-            return deQueuedNode;
+            finally
+            {
+                m_Lock.ExitWriteLock();
+            }
+            Success = false;
+            return default(T);
+        }
+
+        public int DeQueue(int requestedCount, Queue<T> destinationQueue , out bool success)
+        {
+            success = false;
+            int counter = 0;
+            m_Lock.EnterWriteLock();
+            try
+            {
+                while (m_Queue.Count > 0 && destinationQueue.Count < requestedCount)
+                {
+                    counter++;
+                    destinationQueue.Enqueue(m_Queue.Dequeue());
+                    success = true;
+                }
+            }
+            finally
+            {
+                m_Lock.ExitWriteLock();
+            }
+            return counter;
+        }
+        public int DeQueue(int requestedCount, ThreadSafeQueue<T> destinationQueue, out bool success)
+        {
+            success = false;
+            int counter = 0;
+            m_Lock.EnterWriteLock();
+            try
+            {
+                while (m_Queue.Count > 0 && destinationQueue.Count < requestedCount)
+                {
+                    counter++;
+                    destinationQueue.Enqueue(m_Queue.Dequeue());
+                    success = true;
+                }
+            }
+            finally
+            {
+                m_Lock.ExitWriteLock();
+            }
+            return counter;
         }
 
         public T DeQueue()
         {
-            bool deQueueSuccess = false;
-            Node<T> originalHead = null;
-            T deQueuedNode = default(T);
-
-            while (!deQueueSuccess)
+            m_Lock.EnterWriteLock();
+            try
             {
-
-                originalHead = head;
-                Node<T> originalTail = tail;
-                Node<T> originalHeadNext = originalHead.Next;
-
-                if (originalHead == head)
+                if (m_Queue.Count > 0)
                 {
-                    if (originalHead == originalTail)
-                    {
-                        if (originalHeadNext == null)
-                        {
-                            return default(T);
-                        }
-                        CompareExchange(ref tail, originalHeadNext, originalTail);
-                    }
-
-                    else
-                    {
-                        deQueuedNode = originalHeadNext.Item;
-                        deQueueSuccess =
-                        CompareExchange(ref head, originalHeadNext, originalHead);
-                    }
+                    return m_Queue.Dequeue();
                 }
             }
-            Interlocked.Decrement(ref m_QueueSize);
-            return deQueuedNode;
+            finally
+            {
+                m_Lock.ExitWriteLock();
+            }
+            return default(T);
         }
     }
+
+    
 }

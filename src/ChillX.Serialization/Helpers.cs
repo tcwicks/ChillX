@@ -39,7 +39,7 @@ namespace ChillX.Serialization
         public static Func<TObject, byte[], int, int> BuildSerializeGetter<TObject, TProperty>(PropertyInfo property, string BitConverterMethod = @"GetBytes")
         {
             Type targetType = typeof(TObject);
-            MethodInfo getterMethodInfo = property.GetGetMethod();
+            MethodInfo getterMethodInfo = property.GetMethod;
             ParameterExpression entityParameterExpression = Expression.Parameter(targetType);
             MethodCallExpression getterCall = Expression.Call(entityParameterExpression, getterMethodInfo);
 
@@ -50,15 +50,22 @@ namespace ChillX.Serialization
                                 BitConverterMethod,
                                 null, /* no generic type arguments */
                                 expressionBitConverterParameter, expressionBitConverterParameterBuffer, expressionBitConverterParameterStartIndex);
-
-            var invoker = Expression.Call(expressionCallBitConverter.Method, getterCall, expressionBitConverterParameterBuffer, expressionBitConverterParameterStartIndex);
+            MethodCallExpression invoker;
+            if (property.PropertyType.IsEnum)
+            {
+                invoker = Expression.Call(expressionCallBitConverter.Method, Expression.Convert(getterCall, typeof(int)), expressionBitConverterParameterBuffer, expressionBitConverterParameterStartIndex);
+            }
+            else
+            {
+                invoker = Expression.Call(expressionCallBitConverter.Method, getterCall, expressionBitConverterParameterBuffer, expressionBitConverterParameterStartIndex);
+            }
             var invokerCompiled = Expression.Lambda<Func<TObject, byte[], int, int>>(invoker, entityParameterExpression, expressionBitConverterParameterBuffer, expressionBitConverterParameterStartIndex).Compile();
             return invokerCompiled;
         }
         public static Func<TObject, int> BuildSerializeSizeGetter<TObject, TProperty>(PropertyInfo property, string BitConverterMethod = @"GetByteCount")
         {
             Type targetType = typeof(TObject);
-            MethodInfo getterMethodInfo = property.GetGetMethod();
+            MethodInfo getterMethodInfo = property.GetMethod;
             ParameterExpression entityParameterExpression = Expression.Parameter(targetType);
             MethodCallExpression getterCall = Expression.Call(entityParameterExpression, getterMethodInfo);
 
@@ -68,7 +75,15 @@ namespace ChillX.Serialization
                                 null, /* no generic type arguments */
                                 expressionBitConverterParameter);
 
-            var invoker = Expression.Call(expressionCallBitConverter.Method, getterCall);
+            MethodCallExpression invoker;
+            if (property.PropertyType.IsEnum)
+            {
+                invoker = Expression.Call(expressionCallBitConverter.Method, Expression.Convert(getterCall, typeof(int)));
+            }
+            else
+            {
+                invoker = Expression.Call(expressionCallBitConverter.Method, getterCall);
+            }
             var invokerCompiled = Expression.Lambda<Func<TObject, int>>(invoker, entityParameterExpression).Compile();
             return invokerCompiled;
         }
@@ -88,7 +103,15 @@ namespace ChillX.Serialization
                                 null, /* no generic type arguments */
                                 expressionBitConverterParameter, expressionBitConverterParameterBuffer, expressionBitConverterParameterStartIndex);
 
-            var invoker = Expression.Call(expressionCallBitConverter.Method, getterCall, expressionBitConverterParameterBuffer, expressionBitConverterParameterStartIndex);
+            MethodCallExpression invoker;
+            if (field.FieldType.IsEnum)
+            {
+                invoker = Expression.Call(expressionCallBitConverter.Method, Expression.Convert(getterCall, typeof(int)), expressionBitConverterParameterBuffer, expressionBitConverterParameterStartIndex);
+            }
+            else
+            {
+                invoker = Expression.Call(expressionCallBitConverter.Method, getterCall, expressionBitConverterParameterBuffer, expressionBitConverterParameterStartIndex);
+            }
             var invokerCompiled = Expression.Lambda<Func<TObject, byte[], int, int>>(invoker, entityParameterExpression, expressionBitConverterParameterBuffer, expressionBitConverterParameterStartIndex).Compile();
             return invokerCompiled;
         }
@@ -107,7 +130,15 @@ namespace ChillX.Serialization
                                 null, /* no generic type arguments */
                                 expressionBitConverterParameter);
 
-            var invoker = Expression.Call(expressionCallBitConverter.Method, getterCall);
+            MethodCallExpression invoker;
+            if (field.FieldType.IsEnum)
+            {
+                invoker = Expression.Call(expressionCallBitConverter.Method, Expression.Convert(getterCall, typeof(int)));
+            }
+            else
+            {
+                invoker = Expression.Call(expressionCallBitConverter.Method, getterCall);
+            }
             var invokerCompiled = Expression.Lambda<Func<TObject, int>>(invoker, entityParameterExpression).Compile();
             return invokerCompiled;
         }
@@ -124,11 +155,19 @@ namespace ChillX.Serialization
                                 expressionBitConverterValueParameter, expressionBitConverterStartParameter);
 
 
-            MethodInfo setterMethodInfo = property.GetSetMethod();
+            MethodInfo setterMethodInfo = property.SetMethod;
             ParameterExpression entityParameterExpression = Expression.Parameter(targetType);
             MemberExpression propertySetterExpression = Expression.Property(entityParameterExpression, setterMethodInfo);
 
-            BinaryExpression expressionAssign = Expression.Assign(propertySetterExpression, expressionCallBitConverter);
+            BinaryExpression expressionAssign;
+            if (property.PropertyType.IsEnum)
+            {
+                expressionAssign = Expression.Assign(propertySetterExpression, Expression.Convert(expressionCallBitConverter, property.PropertyType));
+            }
+            else
+            {
+                expressionAssign = Expression.Assign(propertySetterExpression, expressionCallBitConverter);
+            }
 
             Action<TObject, byte[], int> invokerCompiled = Expression.Lambda<Action<TObject, byte[], int>>(expressionAssign, entityParameterExpression, expressionBitConverterValueParameter, expressionBitConverterStartParameter).Compile();
             return invokerCompiled;
@@ -149,7 +188,16 @@ namespace ChillX.Serialization
 
             MemberExpression setterCall = Expression.Field(entityParameterExpression, field);
 
-            BinaryExpression expressionAssign = Expression.Assign(setterCall, expressionCallBitConverter);
+            BinaryExpression expressionAssign;
+            if (field.FieldType.IsEnum)
+            {
+                expressionAssign = Expression.Assign(setterCall, Expression.Convert(expressionCallBitConverter, field.FieldType));
+
+            }
+            else
+            {
+                expressionAssign = Expression.Assign(setterCall, expressionCallBitConverter);
+            }
 
             Action<TObject, byte[], int> invokerCompiled = Expression.Lambda<Action<TObject, byte[], int>>(expressionAssign, entityParameterExpression, expressionBitConverterValueParameter, expressionBitConverterStartParameter).Compile();
             return invokerCompiled;
@@ -168,7 +216,7 @@ namespace ChillX.Serialization
                                 expressionBitConverterValueParameter, expressionBitConverterStartParameter, expressionBitConverterLengthParameter);
 
 
-            MethodInfo setterMethodInfo = property.GetSetMethod();
+            MethodInfo setterMethodInfo = property.SetMethod;
             ParameterExpression entityParameterExpression = Expression.Parameter(targetType);
             MemberExpression propertySetterExpression = Expression.Property(entityParameterExpression, setterMethodInfo);
 
@@ -231,7 +279,7 @@ namespace ChillX.Serialization
         //public static Func<TObject, byte[], int, int> BuildSerializeGetterString<TObject>(PropertyInfo property)
         //{
         //    Type targetType = typeof(TObject);
-        //    MethodInfo getterMethodInfo = property.GetGetMethod();
+        //    MethodInfo getterMethodInfo = property.GetMethod;
         //    ParameterExpression entityParameterExpression = Expression.Parameter(targetType);
         //    MethodCallExpression getterCall = Expression.Call(entityParameterExpression, getterMethodInfo);
 
@@ -250,7 +298,7 @@ namespace ChillX.Serialization
         //public static Func<TObject, int> BuildSerializeSizeGetterString<TObject>(PropertyInfo property)
         //{
         //    Type targetType = typeof(TObject);
-        //    MethodInfo getterMethodInfo = property.GetGetMethod();
+        //    MethodInfo getterMethodInfo = property.GetMethod;
         //    ParameterExpression entityParameterExpression = Expression.Parameter(targetType);
         //    MethodCallExpression getterCall = Expression.Call(entityParameterExpression, getterMethodInfo);
 
@@ -316,7 +364,7 @@ namespace ChillX.Serialization
         //                        expressionBitConverterValueParameter, expressionBitConverterStartParameter);
 
 
-        //    MethodInfo setterMethodInfo = property.GetSetMethod();
+        //    MethodInfo setterMethodInfo = property.SetMethod;
         //    ParameterExpression entityParameterExpression = Expression.Parameter(targetType);
         //    ParameterExpression propertyParameterExpression = Expression.Parameter(typeof(string));
         //    MemberExpression propertySetterExpression = Expression.Property(entityParameterExpression, setterMethodInfo);

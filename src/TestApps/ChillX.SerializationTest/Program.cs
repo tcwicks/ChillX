@@ -192,6 +192,7 @@ namespace ChillX.Serialization.Test
             //Test_Locks();
             //TestInterlocked();
 
+
             short[] blah;
             blah = new short[2] { 2, 5 };
             BitConverterExtended.GetBytes(blah, new byte[100], 10);
@@ -199,7 +200,7 @@ namespace ChillX.Serialization.Test
             TestIntegrity ValidateIntegrity = new TestIntegrity();
             ValidateIntegrity.Validate();
 
-            EnableCalculateOverheads = true;
+            EnableCalculateOverheads = false;
             EnableReadOnlyProcessNoQueue = true;
             EnableWriteOnlyProcessNoQueue = true;
             EnableReadOnlyProcessWithQueue = true;
@@ -210,12 +211,14 @@ namespace ChillX.Serialization.Test
             //Console.WriteLine(@"Press Enter To Continue");
             //Console.ReadLine();
             Console.Clear();
-            ChillXSerializerPerformanceTest(200000, 64, 1, 2, 4, 9);
-            MessagePackPerformanceTest(200000, 64, 1, 2, 4, 9);
+            ChillXSerializerPerformanceTest(50000, 64, 1, 2, 4, 9);
+            MessagePackPerformanceTest(50000, 64, 1, 2, 4, 9);
 
             Console.WriteLine(@"");
+            Console.WriteLine(@"Press enter to quit");
+            Console.ReadLine();
 
-            //ChillXLightspeedBenchmark(10000000, 64, 1, 2, 4, false);
+            //ChillXSerializerBenchmark(10000000, 64, 1, 2, 4, false);
             //MessagePackBenchmark(10000000, 64, 1, 2, 4);
 
 
@@ -711,15 +714,15 @@ namespace ChillX.Serialization.Test
         private static ManualResetEvent BenchWaitHandle = new ManualResetEvent(false);
 
         private static ThreadSafeQueue<byte[]> Queue_Buffer = new ThreadSafeQueue<byte[]>();
-        private static ThreadSafeQueue<RentedBuffer> Queue_RentedBuffer = new ThreadSafeQueue<RentedBuffer>();
+        private static ThreadSafeQueue<RentedBuffer<byte>> Queue_RentedBuffer = new ThreadSafeQueue<RentedBuffer<byte>>();
         private static ThreadSafeQueue<ChillXEntity.TestClassVariantA> Queue_ChillX = new ThreadSafeQueue<ChillXEntity.TestClassVariantA>();
         private static ThreadSafeQueue<MessagePackEntity.TestClassVariantA> Queue_MsgPack = new ThreadSafeQueue<MessagePackEntity.TestClassVariantA>();
-        private static TypedSerializer<ChillXEntity.TestClassVariantA> Serializer = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
+        //private static TypedSerializer<ChillXEntity.TestClassVariantA> Serializer = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
         private static byte[] TestBuffer;
         private static int numRepititions;
 
 
-        private static void ChillXLightspeedBench_ReadOverhead()
+        private static void ChillXSerializerBench_ReadOverhead()
         {
             byte[] buffer;
             bool success;
@@ -735,7 +738,7 @@ namespace ChillX.Serialization.Test
             }
         }
 
-        private static void ChillXLightspeedBench_WriteOverhead()
+        private static void ChillXSerializerBench_WriteOverhead()
         {
             byte[] buffer;
             bool success;
@@ -754,55 +757,82 @@ namespace ChillX.Serialization.Test
             }
             buffer = new byte[bytesConsumed];// Prevent compiler stripping out bytesConsumed = buffer.Length;
         }
-        private static void ChillXLightspeedBench_ReadNoQueue()
+        private static void ChillXSerializerBench_ReadNoQueue()
         {
             byte[] buffer;
             ChillXEntity.TestClassVariantA TestClassOne;
-            TypedSerializer<ChillXEntity.TestClassVariantA> SerializerLocal = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
+            //TypedSerializer<ChillXEntity.TestClassVariantA> SerializerLocal = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
             TestClassOne = Queue_ChillX.DeQueue();
             buffer = new byte[TestBuffer.Length];
-            RentedBuffer bufferRented;
+            RentedBuffer<byte> bufferRented;
             BenchWaitHandle.WaitOne();
             for (int I = 0; I < numRepititions; I++)
             {
-                bufferRented = SerializerLocal.ReadToRentedBuffer(TestClassOne);
-                bufferRented.Dispose();
+                bufferRented = ChillXSerializer<ChillXEntity.TestClassVariantA>.ReadToRentedBuffer(TestClassOne);
+                bufferRented.Return();
             }
         }
-        private static void ChillXLightspeedBench_WriteNoQueue()
+        private static void ChillXSerializerBench_WriteNoQueue()
         {
             byte[] buffer;
             int bytesConsumed;
             ChillXEntity.TestClassVariantA TestClassTwo;
-            TypedSerializer<ChillXEntity.TestClassVariantA> SerializerLocal = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
-            TestClassTwo = new ChillXEntity.TestClassVariantA();
+            //TypedSerializer<ChillXEntity.TestClassVariantA> SerializerLocal = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
+            //TestClassTwo = new ChillXEntity.TestClassVariantA();
             buffer = new List<byte>(TestBuffer).ToArray();
             BenchWaitHandle.WaitOne();
             for (int I = 0; I < numRepititions; I++)
             {
-                SerializerLocal.Write(TestClassTwo, buffer, out bytesConsumed);
+                TestClassTwo = new ChillXEntity.TestClassVariantA();
+                ChillXSerializer<ChillXEntity.TestClassVariantA>.Write(TestClassTwo, buffer, out bytesConsumed);
+                TestClassTwo.Dispose();
+                TestClassTwo = null;
             }
         }
 
-        private static void ChillXLightspeedBench_Read()
+        private static void ChillXSerializerBench_Read()
         {
-            RentedBuffer buffer;
+            RentedBuffer<byte> buffer;
             ChillXEntity.TestClassVariantA TestClassOne;
             //TypedSerializer<ChillXEntity.TestClassVariantA> SerializerLocal = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
             BenchWaitHandle.WaitOne();
             while (ThreadsIsRunning)
             {
-                TestClassOne = Queue_ChillX.DeQueue();
-                if (TestClassOne != null)
+                if (Queue_RentedBuffer.Count < 20000)
                 {
-                    buffer = Serializer.ReadToRentedBuffer(TestClassOne);
-                    Queue_RentedBuffer.Enqueue(buffer);
+                    TestClassOne = Queue_ChillX.DeQueue();
+                    if (TestClassOne != null)
+                    {
+                        buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.ReadToRentedBuffer(TestClassOne);
+                        Queue_RentedBuffer.Enqueue(buffer);
+                    }
                 }
             }
         }
-        private static void ChillXLightspeedBench_Write()
+        private static void ChillXSerializerBench_Write()
         {
-            RentedBuffer buffer;
+            RentedBuffer<byte> buffer;
+            int bytesConsumed;
+            ChillXEntity.TestClassVariantA TestClassTwo;
+            //TestClassTwo = new ChillXEntity.TestClassVariantA();
+            BenchWaitHandle.WaitOne();
+            while (ThreadsIsRunning) // Might miss a couple (< numthreads) but close enough
+            {
+                //Queue_Buffer.WaitHandle.WaitOne();
+                buffer = Queue_RentedBuffer.DeQueue();
+                if (buffer != null)
+                {
+                    TestClassTwo = new ChillXEntity.TestClassVariantA();
+                    ChillXSerializer<ChillXEntity.TestClassVariantA>.Write(TestClassTwo, buffer._rawBufferInternal, out bytesConsumed);
+                    TestClassTwo.Dispose();
+                    TestClassTwo = null;
+                    buffer.Return();
+                }
+            }
+        }
+        private static void ChillXSerializerBench_Dispose()
+        {
+            RentedBuffer<byte> buffer;
             int bytesConsumed;
             ChillXEntity.TestClassVariantA TestClassTwo;
             TestClassTwo = new ChillXEntity.TestClassVariantA();
@@ -813,25 +843,7 @@ namespace ChillX.Serialization.Test
                 buffer = Queue_RentedBuffer.DeQueue();
                 if (buffer != null)
                 {
-                    Serializer.Write(TestClassTwo, buffer.buffer, out bytesConsumed);
-                    buffer.Dispose();
-                }
-            }
-        }
-        private static void ChillXLightspeedBench_Dispose()
-        {
-            RentedBuffer buffer;
-            int bytesConsumed;
-            ChillXEntity.TestClassVariantA TestClassTwo;
-            TestClassTwo = new ChillXEntity.TestClassVariantA();
-            BenchWaitHandle.WaitOne();
-            while (ThreadsIsRunning) // Might miss a couple (< numthreads) but close enough
-            {
-                //Queue_Buffer.WaitHandle.WaitOne();
-                buffer = Queue_RentedBuffer.DeQueue();
-                if (buffer != null)
-                {
-                    buffer.Dispose();
+                    buffer.Return();
                 }
             }
         }
@@ -859,9 +871,9 @@ namespace ChillX.Serialization.Test
                 return IntegrityCount;
             }
         }
-        private static void ChillXLightspeedBench_ReadIntegrity()
+        private static void ChillXSerializerBench_ReadIntegrity()
         {
-            RentedBuffer buffer;
+            RentedBuffer<byte> buffer;
             ChillXEntity.TestClassVariantA TestClassOne;
             //TypedSerializer<ChillXEntity.TestClassVariantA> SerializerLocal = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
             BenchWaitHandle.WaitOne();
@@ -870,18 +882,17 @@ namespace ChillX.Serialization.Test
                 TestClassOne = Queue_ChillX.DeQueue();
                 if (TestClassOne != null)
                 {
-                    buffer = Serializer.ReadToRentedBuffer(TestClassOne);
+                    buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.ReadToRentedBuffer(TestClassOne);
                     Queue_RentedBuffer.Enqueue(buffer);
                 }
             }
         }
 
-        private static void ChillXLightspeedBench_WriteIntegrity()
+        private static void ChillXSerializerBench_WriteIntegrity()
         {
-            RentedBuffer buffer;
+            RentedBuffer<byte> buffer;
             int bytesConsumed;
             ChillXEntity.TestClassVariantA TestClassTwo;
-            TestClassTwo = new ChillXEntity.TestClassVariantA();
             int Counter = 0;
             BenchWaitHandle.WaitOne();
             while (ThreadsIsRunning || Queue_RentedBuffer.HasItems())
@@ -891,8 +902,10 @@ namespace ChillX.Serialization.Test
                 if (buffer != null)
                 {
                     IntegrityCount_Decrement();
-                    Serializer.Write(TestClassTwo, buffer.buffer, out bytesConsumed);
-                    buffer.Dispose();
+                    TestClassTwo = new ChillXEntity.TestClassVariantA();
+                    ChillXSerializer<ChillXEntity.TestClassVariantA>.Write(TestClassTwo, buffer._rawBufferInternal, out bytesConsumed);
+                    buffer.Return();
+                    TestClassTwo.Dispose();
                     Counter--;
                 }
             }
@@ -903,14 +916,14 @@ namespace ChillX.Serialization.Test
         {
             Console.WriteLine(@"");
             Console.WriteLine(@"----------------------------------------------------------------------------------");
-            Console.WriteLine(@"Benchmarking LIghtSpeed Serializer: Test Object: Data class with 31 properties / fields of different types inlcuding multiple arrays of different types");
+            Console.WriteLine(@"Benchmarking ChillX Serializer: Test Object: Data class with 31 properties / fields of different types inlcuding multiple arrays of different types");
             Console.WriteLine(@"Num Reps: {0}  -  Array Size: {1}", numReps, stringSize);
             Console.WriteLine(@"----------------------------------------------------------------------------------");
             Random rnd = new Random();
             ChillXEntity.TestClassVariantA TestClassOne = new ChillXEntity.TestClassVariantA();
             ChillXEntity.TestClassVariantA TestClassTwo = new ChillXEntity.TestClassVariantA();
 
-            TypedSerializer<ChillXEntity.TestClassVariantA> Serializer = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
+            //TypedSerializer<ChillXEntity.TestClassVariantA> Serializer = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
 
             bool isEqual;
             isEqual = TestClassOne.Equals(TestClassTwo);
@@ -921,8 +934,8 @@ namespace ChillX.Serialization.Test
 
             byte[] buffer;
             int bytesConsumed;
-            buffer = Serializer.Read(TestClassOne);
-            Serializer.Write(TestClassTwo, buffer, out bytesConsumed);
+            buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
+            ChillXSerializer<ChillXEntity.TestClassVariantA>.Write(TestClassTwo, buffer, out bytesConsumed);
             isEqual = TestClassOne.EqualsDebug(TestClassTwo);
             if (!isEqual)
             {
@@ -953,7 +966,7 @@ namespace ChillX.Serialization.Test
                     sw.Restart();
                     for (int I = 0; I < numReps; I++)
                     {
-                        buffer = Serializer.Read(TestClassOne);
+                        buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
                     }
                     sw.Stop();
                     if (sw.ElapsedTicks < ElapsedTicks)
@@ -970,7 +983,7 @@ namespace ChillX.Serialization.Test
                     sw.Restart();
                     for (int I = 0; I < numReps; I++)
                     {
-                        Serializer.Write(TestClassTwo, buffer, out bytesConsumed);
+                        ChillXSerializer<ChillXEntity.TestClassVariantA>.Write(TestClassTwo, buffer, out bytesConsumed);
                     }
                     sw.Stop();
                     if (sw.ElapsedTicks < ElapsedTicks)
@@ -1016,7 +1029,7 @@ namespace ChillX.Serialization.Test
 
             TestClassOne = new ChillXEntity.TestClassVariantA();
             TestClassOne.RandomizeData(rnd, stringSize);
-            TestBuffer = Serializer.Read(TestClassOne);
+            TestBuffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
             if (EnableCalculateOverheads)
             {
                 for (int I = 0; I < 10; I++)
@@ -1024,7 +1037,7 @@ namespace ChillX.Serialization.Test
                     Queue_ChillX.Enqueue(TestClassOne);
                 }
 
-                buffer = Serializer.Read(TestClassOne);
+                buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
                 for (int I = 0; I < 10; I++)
                 {
                     Queue_Buffer.Enqueue(buffer);
@@ -1056,7 +1069,7 @@ namespace ChillX.Serialization.Test
                 ElapsedTicks = sw.ElapsedTicks;
                 Console.WriteLine(@"  Calculating Raw Overheads (QueueSize) : Count: {1:00,000,000}  -  Time: {2}", buffer.Length, numReps, TimeSpan.FromTicks(ElapsedTicks).ToString());
 
-                buffer = Serializer.Read(TestClassOne);
+                buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
                 for (int I = 0; I < 3; I++)
                 {
                     int numThreads = 1;
@@ -1083,10 +1096,10 @@ namespace ChillX.Serialization.Test
                         for (int N = 0; N < numThreads; N++)
                         {
                             Thread T;
-                            T = new Thread(new ThreadStart(ChillXLightspeedBench_ReadOverhead));
+                            T = new Thread(new ThreadStart(ChillXSerializerBench_ReadOverhead));
                             runningTHreadList.Add(T);
                             T.Start();
-                            T = new Thread(new ThreadStart(ChillXLightspeedBench_WriteOverhead));
+                            T = new Thread(new ThreadStart(ChillXSerializerBench_WriteOverhead));
                             runningTHreadList.Add(T);
                             T.Start();
                         }
@@ -1141,7 +1154,7 @@ namespace ChillX.Serialization.Test
 
             Console.WriteLine(@"");
 
-            buffer = Serializer.Read(TestClassOne);
+            buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
             numRepititions = numReps;
             if (EnableReadOnlyProcessNoQueue)
             {
@@ -1171,10 +1184,10 @@ namespace ChillX.Serialization.Test
                         for (int N = 0; N < numThreads; N++)
                         {
                             Thread T;
-                            T = new Thread(new ThreadStart(ChillXLightspeedBench_ReadNoQueue));
+                            T = new Thread(new ThreadStart(ChillXSerializerBench_ReadNoQueue));
                             runningTHreadList.Add(T);
                             T.Start();
-                            //T = new Thread(new ThreadStart(ChillXLightspeedBench_WriteNoQueue));
+                            //T = new Thread(new ThreadStart(ChillXSerializerBench_WriteNoQueue));
                             //runningTHreadList.Add(T);
                             //T.Start();
                         }
@@ -1213,13 +1226,13 @@ namespace ChillX.Serialization.Test
                     SerializeSeconds = TimeSpan.FromTicks(ElapsedTicks).TotalSeconds;
                     SerializeRatePerSecond = ((double)(numReps * numThreads)) / SerializeSeconds;
                     SerializeMbps = (SerializeRatePerSecond * ((double)buffer.Length)) / ((double)(1024 * 1024));
-                    Console.WriteLine(@"Read Only Process No Q  : Entity Size bytes: {0:00,000}  -  Count: {1:00,000,000}  -  Threads: {2:00}  -  Entities Per Second: {3:00,000,000}  -  Mbps: {4:0.00}  -  Time: {5}", buffer.Length, numReps, numThreads, SerializeRatePerSecond, SerializeMbps, TimeSpan.FromTicks(ElapsedTicks).ToString());
+                    Console.WriteLine(@"Read Only Process No Q  : Entity Size bytes: {0:00,000}  -  Count: {1:00,000,000}  -  Threads: {2:00}  -  Entities Per Second: {3:00,000,000}  -  Mbps: {4:0.00}  -  Time: {5}", buffer.Length, (numReps * numThreads), numThreads, SerializeRatePerSecond, SerializeMbps, TimeSpan.FromTicks(ElapsedTicks).ToString());
                 }
                 Console.WriteLine(@"");
             }
 
 
-            buffer = Serializer.Read(TestClassOne);
+            buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
             numRepititions = numReps;
             if (EnableWriteOnlyProcessNoQueue)
             {
@@ -1249,10 +1262,10 @@ namespace ChillX.Serialization.Test
                         for (int N = 0; N < numThreads; N++)
                         {
                             Thread T;
-                            //T = new Thread(new ThreadStart(ChillXLightspeedBench_ReadNoQueue));
+                            //T = new Thread(new ThreadStart(ChillXSerializerBench_ReadNoQueue));
                             //runningTHreadList.Add(T);
                             //T.Start();
-                            T = new Thread(new ThreadStart(ChillXLightspeedBench_WriteNoQueue));
+                            T = new Thread(new ThreadStart(ChillXSerializerBench_WriteNoQueue));
                             runningTHreadList.Add(T);
                             T.Start();
                         }
@@ -1291,13 +1304,13 @@ namespace ChillX.Serialization.Test
                     SerializeSeconds = TimeSpan.FromTicks(ElapsedTicks).TotalSeconds;
                     SerializeRatePerSecond = ((double)(numReps * numThreads)) / SerializeSeconds;
                     SerializeMbps = (SerializeRatePerSecond * ((double)buffer.Length)) / ((double)(1024 * 1024));
-                    Console.WriteLine(@"Write Only Process No Q : Entity Size bytes: {0:00,000}  -  Count: {1:00,000,000}  -  Threads: {2:00}  -  Entities Per Second: {3:00,000,000}  -  Mbps: {4:0.00}  -  Time: {5}", buffer.Length, numReps, numThreads, SerializeRatePerSecond, SerializeMbps, TimeSpan.FromTicks(ElapsedTicks).ToString());
+                    Console.WriteLine(@"Write Only Process No Q : Entity Size bytes: {0:00,000}  -  Count: {1:00,000,000}  -  Threads: {2:00}  -  Entities Per Second: {3:00,000,000}  -  Mbps: {4:0.00}  -  Time: {5}", buffer.Length, (numReps * numThreads), numThreads, SerializeRatePerSecond, SerializeMbps, TimeSpan.FromTicks(ElapsedTicks).ToString());
                 }
                 Console.WriteLine(@"");
             }
 
 
-            buffer = Serializer.Read(TestClassOne);
+            buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
             if (EnableReadOnlyProcessWithQueue)
             {
                 for (int I = 0; I < 3; I++)
@@ -1317,6 +1330,7 @@ namespace ChillX.Serialization.Test
                         Thread.Sleep(100);
                         Queue_ChillX.Clear();
                         Queue_Buffer.Clear();
+                        Queue_RentedBuffer.Clear();
                         BenchWaitHandle.Reset();
                         ThreadRun();
                         for (int N = 0; N < numReps; N++)
@@ -1326,10 +1340,10 @@ namespace ChillX.Serialization.Test
                         for (int N = 0; N < numThreads; N++)
                         {
                             Thread T;
-                            T = new Thread(new ThreadStart(ChillXLightspeedBench_Read));
+                            T = new Thread(new ThreadStart(ChillXSerializerBench_Read));
                             runningTHreadList.Add(T);
                             T.Start();
-                            T = new Thread(new ThreadStart(ChillXLightspeedBench_Dispose));
+                            T = new Thread(new ThreadStart(ChillXSerializerBench_Dispose));
                             runningTHreadList.Add(T);
                             T.Start();
                         }
@@ -1378,7 +1392,7 @@ namespace ChillX.Serialization.Test
                 Console.WriteLine(@"");
             }
 
-            buffer = Serializer.Read(TestClassOne);
+            buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
             if (EnableWriteOnlyProcessWithQueue)
             {
                 for (int I = 0; I < 3; I++)
@@ -1398,19 +1412,20 @@ namespace ChillX.Serialization.Test
                         Thread.Sleep(100);
                         Queue_ChillX.Clear();
                         Queue_Buffer.Clear();
+                        Queue_RentedBuffer.Clear();
                         BenchWaitHandle.Reset();
                         ThreadRun();
                         for (int N = 0; N < numReps; N++)
                         {
-                            Queue_RentedBuffer.Enqueue(Serializer.ReadToRentedBuffer(TestClassOne));
+                            Queue_RentedBuffer.Enqueue(ChillXSerializer<ChillXEntity.TestClassVariantA>.ReadToRentedBuffer(TestClassOne));
                         }
                         for (int N = 0; N < numThreads; N++)
                         {
                             Thread T;
-                            //T = new Thread(new ThreadStart(ChillXLightspeedBench_Read));
+                            //T = new Thread(new ThreadStart(ChillXSerializerBench_Read));
                             //runningTHreadList.Add(T);
                             //T.Start();
-                            T = new Thread(new ThreadStart(ChillXLightspeedBench_Write));
+                            T = new Thread(new ThreadStart(ChillXSerializerBench_Write));
                             runningTHreadList.Add(T);
                             T.Start();
                         }
@@ -1459,7 +1474,7 @@ namespace ChillX.Serialization.Test
                 Console.WriteLine(@"");
             }
 
-            buffer = Serializer.Read(TestClassOne);
+            buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
             if (EnableRoundTripProcessWithQueue)
             {
                 for (int I = 0; I < 3; I++)
@@ -1478,20 +1493,20 @@ namespace ChillX.Serialization.Test
                         GC.Collect();
                         Thread.Sleep(100);
                         Queue_ChillX.Clear();
-                        Queue_Buffer.Clear();
+                        Queue_RentedBuffer.Clear();
                         BenchWaitHandle.Reset();
                         ThreadRun();
                         for (int N = 0; N < numReps; N++)
                         {
-                            Queue_ChillX.Enqueue(TestClassOne.Clone());
+                            Queue_ChillX.Enqueue(TestClassOne);
                         }
                         for (int N = 0; N < numThreads; N++)
                         {
                             Thread T;
-                            T = new Thread(new ThreadStart(ChillXLightspeedBench_Read));
+                            T = new Thread(new ThreadStart(ChillXSerializerBench_Read));
                             runningTHreadList.Add(T);
                             T.Start();
-                            T = new Thread(new ThreadStart(ChillXLightspeedBench_Write));
+                            T = new Thread(new ThreadStart(ChillXSerializerBench_Write));
                             runningTHreadList.Add(T);
                             T.Start();
                         }
@@ -1509,7 +1524,7 @@ namespace ChillX.Serialization.Test
                         while (BenchRunning)
                         {
                             Thread.Sleep(1);
-                            BenchRunning = Queue_Buffer.HasItems();
+                            BenchRunning = Queue_RentedBuffer.HasItems();
                         }
                         ThreadExit();
                         foreach (Thread T in runningTHreadList)
@@ -1547,7 +1562,7 @@ namespace ChillX.Serialization.Test
 
             List<Thread> publisherThreadList = new List<Thread>();
             List<Thread> subscriberThreadList = new List<Thread>();
-            buffer = Serializer.Read(TestClassOne);
+            buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
             if (EnableRoundTripProcessIntegrity)
             {
                 bool BenchRunning = true;
@@ -1559,11 +1574,12 @@ namespace ChillX.Serialization.Test
                 Thread.Sleep(100);
                 Queue_ChillX.Clear();
                 Queue_Buffer.Clear();
+                Queue_RentedBuffer.Clear();
                 BenchWaitHandle.Reset();
                 ThreadRun();
                 for (int N = 0; N < numReps; N++)
                 {
-                    Queue_ChillX.Enqueue(TestClassOne.Clone());
+                    Queue_ChillX.Enqueue(TestClassOne);
                     IntegrityCount_Increment();
                 }
                 //IntegrityCount_Adjust(numReps);
@@ -1571,10 +1587,10 @@ namespace ChillX.Serialization.Test
                 for (int N = 0; N < numThreads; N++)
                 {
                     Thread T;
-                    T = new Thread(new ThreadStart(ChillXLightspeedBench_ReadIntegrity));
+                    T = new Thread(new ThreadStart(ChillXSerializerBench_ReadIntegrity));
                     publisherThreadList.Add(T);
                     T.Start();
-                    T = new Thread(new ThreadStart(ChillXLightspeedBench_WriteIntegrity));
+                    T = new Thread(new ThreadStart(ChillXSerializerBench_WriteIntegrity));
                     subscriberThreadList.Add(T);
                     T.Start();
                 }
@@ -1631,6 +1647,12 @@ namespace ChillX.Serialization.Test
                     Thread.Sleep(1);
                     BenchRunning = Queue_Buffer.HasItems();
                 }
+                BenchRunning = true;
+                while (BenchRunning)
+                {
+                    Thread.Sleep(1);
+                    BenchRunning = Queue_RentedBuffer.HasItems();
+                }
                 //Console.WriteLine(@"Integrity {0}", IntegrityCount_Get());
                 ThreadExit();
                 foreach (Thread T in publisherThreadList)
@@ -1650,7 +1672,7 @@ namespace ChillX.Serialization.Test
                 SerializeSeconds = TimeSpan.FromTicks(ElapsedTicks).TotalSeconds;
                 SerializeRatePerSecond = ((double)(numReps * (numBestOf + 2))) / SerializeSeconds;
                 SerializeMbps = (SerializeRatePerSecond * ((double)buffer.Length)) / ((double)(1024 * 1024));
-                Console.WriteLine(@"Round Trip integrity W  : Entity Size bytes: {0:00,000}  -  Count: {1:00,000,000}  -  Threads: {2:00}  -  Entities Per Second: {3:00,000,000}  -  Mbps: {4:0.00}  -  Integrity: {5}  -  Time: {6}", buffer.Length, numReps, numThreads, SerializeRatePerSecond, SerializeMbps, IntegrityCount_Get(), TimeSpan.FromTicks(ElapsedTicks).ToString());
+                Console.WriteLine(@"Round Trip integrity W  : Entity Size bytes: {0:00,000}  -  Count: {1:00,000,000}  -  Threads: {2:00}  -  Entities Per Second: {3:00,000,000}  -  Mbps: {4:0.00}  -  Integrity Failures: {5}  -  Time: {6}", buffer.Length, numReps, numThreads, SerializeRatePerSecond, SerializeMbps, IntegrityCount_Get(), TimeSpan.FromTicks(ElapsedTicks).ToString());
             }
         }
 
@@ -1690,7 +1712,7 @@ namespace ChillX.Serialization.Test
         {
             Console.WriteLine(@"");
             Console.WriteLine(@"----------------------------------------------------------------------------------");
-            Console.WriteLine(@"Benchmarking LIghtSpeed Serializer: Test Object: Data class with 31 properties / fields of different types inlcuding multiple arrays of different types");
+            Console.WriteLine(@"Benchmarking MessagePack Serializer: Test Object: Data class with 31 properties / fields of different types inlcuding multiple arrays of different types");
             Console.WriteLine(@"Num Reps: {0}  -  Array Size: {1}", numReps, stringSize);
             Console.WriteLine(@"----------------------------------------------------------------------------------");
             Random rnd = new Random();
@@ -1939,7 +1961,7 @@ namespace ChillX.Serialization.Test
             ChillXEntity.TestClassVariantA TestClassOne = new ChillXEntity.TestClassVariantA();
             ChillXEntity.TestClassVariantA TestClassTwo = new ChillXEntity.TestClassVariantA();
 
-            TypedSerializer<ChillXEntity.TestClassVariantA> Serializer = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
+            //TypedSerializer<ChillXEntity.TestClassVariantA> Serializer = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
 
             bool isEqual;
             isEqual = TestClassOne.Equals(TestClassTwo);
@@ -1950,8 +1972,8 @@ namespace ChillX.Serialization.Test
 
             byte[] buffer;
             int bytesConsumed;
-            buffer = Serializer.Read(TestClassOne);
-            Serializer.Write(TestClassTwo, buffer, out bytesConsumed);
+            buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
+            ChillXSerializer<ChillXEntity.TestClassVariantA>.Write(TestClassTwo, buffer, out bytesConsumed);
             isEqual = TestClassOne.EqualsDebug(TestClassTwo);
             if (!isEqual)
             {

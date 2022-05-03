@@ -23,105 +23,145 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Notice: This test app uses Messagepack purely for performance comparison
  */
 
+using ChillX.Core.Structures;
 using System.Diagnostics.CodeAnalysis;
 
 namespace ChillX.Serialization.Test.ChillXEntity
 {
-    [LightSpeedEntityAttribute(1)]
-    public class TestClassVariantA : IEqualityComparer<TestClassVariantA>
+    [SerializedEntityAttribute(1)]
+    public class TestClassVariantA : IEqualityComparer<TestClassVariantA>, IDisposable
     {
         private int m_VariantABackingPropertyOne = 1;
-        [LightSpeedSerializeAttribute(1)]
+        [SerializedMemberAttribute(1)]
         public int VariantABackingPropertyOne { get { return m_VariantABackingPropertyOne; } set { m_VariantABackingPropertyOne = value; } }
 
-        [LightSpeedSerializeAttribute(2)]
+        [SerializedMemberAttribute(2)]
         private int m_IndependentPrivateFieldOne = 2;
 
-        [LightSpeedSerializeAttribute(3)]
+        [SerializedMemberAttribute(3)]
         public int m_IndependentPublicFieldOne = 3;
-        [LightSpeedSerializeAttribute(4)]
+        [SerializedMemberAttribute(4)]
         public int VariantAPropertyOne { get; set; } = 4;
 
-        [LightSpeedSerializeAttribute(5)]
+        [SerializedMemberAttribute(5)]
         public short VariantAPropertyShort { get; set; } = 5;
 
-        [LightSpeedSerializeAttribute(6)]
+        [SerializedMemberAttribute(6)]
         public long VariantAPropertyLong { get; set; } = 6;
 
-        [LightSpeedSerializeAttribute(7)]
+        [SerializedMemberAttribute(7)]
         public UInt16 VariantAPropertyUInt16 { get; set; } = 7;
 
-        [LightSpeedSerializeAttribute(8)]
+        [SerializedMemberAttribute(8)]
         public UInt32 VariantAPropertyUInt32 { get; set; } = 8;
 
-        [LightSpeedSerializeAttribute(9)]
+        [SerializedMemberAttribute(9)]
         public UInt64 VariantAPropertyUInt64 { get; set; } = 9;
 
-        [LightSpeedSerializeAttribute(10)]
+        [SerializedMemberAttribute(10)]
         public float VariantAPropertyHalf { get; set; } = 1.1f;
 
-        [LightSpeedSerializeAttribute(11)]
+        [SerializedMemberAttribute(11)]
         public float VariantAPropertyFloat { get; set; } = 1.1f;
 
-        [LightSpeedSerializeAttribute(12)]
+        [SerializedMemberAttribute(12)]
         public Single VariantAPropertySingle { get; set; } = 1.1f;
 
-        [LightSpeedSerializeAttribute(13)]
+        [SerializedMemberAttribute(13)]
         public double VariantAPropertyDouble { get; set; } = 1.2d;
 
-        [LightSpeedSerializeAttribute(14)]
+        [SerializedMemberAttribute(14)]
         public bool VariantAPropertyBool { get; set; } = true;
 
-        [LightSpeedSerializeAttribute(15)]
+        [SerializedMemberAttribute(15)]
         public string VariantAPropertyString { get; set; } = @"VariantAPropertyString";
 
-        [LightSpeedSerializeAttribute(16)]
+        [SerializedMemberAttribute(16)]
         public char VariantAPropertyChar { get; set; } = 'C';
 
-        [LightSpeedSerializeAttribute(17)]
+        [SerializedMemberAttribute(17)]
         private string m_IndependentPrivateFieldString = @"m_IndependentPrivateFieldString";
 
-        [LightSpeedSerializeAttribute(18)]
+        [SerializedMemberAttribute(18)]
         public string m_IndependentPublicFieldString = @"m_IndependentPublicFieldString";
 
-        [LightSpeedSerializeAttribute(19)]
-        public char[] ArrayProperty_Char { get; set; } = null;
+        //[SerializedMemberAttribute(19)]
+        //public char[] ArrayProperty_Char { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(20)]
-        public byte[] ArrayProperty_Byte { get; set; } = null;
+        //[SerializedMemberAttribute(20)]
+        //public byte[] ArrayProperty_Byte { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(21)]
-        public short[] ArrayProperty_Short { get; set; } = null;
+        //[SerializedMemberAttribute(21)]
+        //public short[] ArrayProperty_Short { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(22)]
-        public int[] ArrayProperty_Int { get; set; } = null;
+        //[SerializedMemberAttribute(22)]
+        //public int[] ArrayProperty_Int { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(23)]
-        public long[] ArrayProperty_Long { get; set; } = null;
+        //[SerializedMemberAttribute(23)]
+        //public long[] ArrayProperty_Long { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(24)]
-        public ushort[] ArrayProperty_UShort { get; set; } = null;
+        //[SerializedMemberAttribute(24)]
+        //public ushort[] ArrayProperty_UShort { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(25)]
-        public uint[] ArrayProperty_UInt { get; set; } = null;
+        //[SerializedMemberAttribute(25)]
+        //public uint[] ArrayProperty_UInt { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(26)]
-        public ulong[] ArrayProperty_ULong { get; set; } = null;
+        //[SerializedMemberAttribute(26)]
+        //public ulong[] ArrayProperty_ULong { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(27)]
-        public float[] ArrayProperty_Single { get; set; } = null;
+        //[SerializedMemberAttribute(27)]
+        //public float[] ArrayProperty_Single { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(28)]
-        public double[] ArrayProperty_Double { get; set; } = null;
+        //[SerializedMemberAttribute(28)]
+        //public double[] ArrayProperty_Double { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(29)]
-        public decimal[] ArrayProperty_Decimal { get; set; } = null;
+        //[SerializedMemberAttribute(29)]
+        //public decimal[] ArrayProperty_Decimal { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(30)]
-        public TimeSpan[] ArrayProperty_TimeSpan { get; set; } = null;
+        //[SerializedMemberAttribute(30)]
+        //public TimeSpan[] ArrayProperty_TimeSpan { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(31)]
-        public DateTime[] ArrayProperty_DateTime { get; set; } = null;
+        //[SerializedMemberAttribute(31)]
+        //public DateTime[] ArrayProperty_DateTime { get; set; } = null;
+
+        [SerializedMemberAttribute(19)]
+        public RentedBuffer<char> ArrayProperty_Char { get; set; } = null;
+
+        [SerializedMemberAttribute(20)]
+        public RentedBuffer<byte> ArrayProperty_Byte { get; set; } = null;
+
+        [SerializedMemberAttribute(21)]
+        public RentedBuffer<short> ArrayProperty_Short { get; set; } = null;
+
+        [SerializedMemberAttribute(22)]
+        public RentedBuffer<int> ArrayProperty_Int { get; set; } = null;
+
+        [SerializedMemberAttribute(23)]
+        public RentedBuffer<long> ArrayProperty_Long { get; set; } = null;
+
+        [SerializedMemberAttribute(24)]
+        public RentedBuffer<ushort> ArrayProperty_UShort { get; set; } = null;
+
+        [SerializedMemberAttribute(25)]
+        public RentedBuffer<uint> ArrayProperty_UInt { get; set; } = null;
+
+        [SerializedMemberAttribute(26)]
+        public RentedBuffer<ulong> ArrayProperty_ULong { get; set; } = null;
+
+        [SerializedMemberAttribute(27)]
+        public RentedBuffer<float> ArrayProperty_Single { get; set; } = null;
+
+        [SerializedMemberAttribute(28)]
+        public RentedBuffer<double> ArrayProperty_Double { get; set; } = null;
+
+        [SerializedMemberAttribute(29)]
+        public RentedBuffer<decimal> ArrayProperty_Decimal { get; set; } = null;
+
+        [SerializedMemberAttribute(30)]
+        public RentedBuffer<TimeSpan> ArrayProperty_TimeSpan { get; set; } = null;
+
+        [SerializedMemberAttribute(31)]
+        public RentedBuffer<DateTime> ArrayProperty_DateTime { get; set; } = null;
 
         public TestClassVariantA RandomizeData(Random rnd, int arraySize)
         {
@@ -156,71 +196,71 @@ namespace ChillX.Serialization.Test.ChillXEntity
             }
             m_IndependentPublicFieldString = sb.ToString();
 
-            ArrayProperty_Char = new char[arraySize];
+            ArrayProperty_Char ??= RentedBuffer<char>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_Char[i] = (char)(byte)rnd.Next(32, 125);
             }
-            ArrayProperty_Byte = new byte[arraySize];
+            ArrayProperty_Byte ??= RentedBuffer<byte>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_Byte[i] = (byte)rnd.Next(byte.MinValue, byte.MaxValue);
             }
-            ArrayProperty_Short = new short[arraySize];
+            ArrayProperty_Short ??= RentedBuffer<short>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_Short[i] = (short)rnd.Next(short.MinValue, short.MaxValue);
             }
-            ArrayProperty_Int = new int[arraySize];
+            ArrayProperty_Int ??= RentedBuffer<int>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_Int[i] = rnd.Next(int.MinValue, int.MaxValue);
             }
-            ArrayProperty_Long = new long[arraySize];
+            ArrayProperty_Long ??= RentedBuffer<long>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_Long[i] = (long)rnd.Next(int.MinValue, int.MaxValue);
             }
-            ArrayProperty_UShort = new ushort[arraySize];
+            ArrayProperty_UShort ??= RentedBuffer<ushort>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_UShort[i] = (ushort)rnd.Next(ushort.MinValue, ushort.MaxValue);
             }
-            ArrayProperty_UInt = new uint[arraySize];
+            ArrayProperty_UInt ??= RentedBuffer<uint>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_UInt[i] = (uint)rnd.Next(1, int.MaxValue);
             }
-            ArrayProperty_ULong = new ulong[arraySize];
+            ArrayProperty_ULong ??= RentedBuffer<ulong>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_ULong[i] = (ulong)rnd.Next(1, int.MaxValue);
             }
-            ArrayProperty_Single = new float[arraySize];
+            ArrayProperty_Single ??= RentedBuffer<float>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_Single[i] = (float)rnd.NextDouble() * (float)rnd.Next(1, int.MaxValue);
             }
             ArrayProperty_Single[0] = (float)Math.PI;
-            ArrayProperty_Double = new double[arraySize];
+            ArrayProperty_Double ??= RentedBuffer<double>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_Double[i] = rnd.NextDouble() * ((double)rnd.Next(1, int.MaxValue));
             }
             ArrayProperty_Double[0] = Math.PI;
-            ArrayProperty_Decimal = new decimal[arraySize];
+            ArrayProperty_Decimal ??= RentedBuffer<decimal>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_Decimal[i] = (decimal)(rnd.NextDouble() * ((double)rnd.Next(1, int.MaxValue)));
             }
             if (arraySize > 1) { ArrayProperty_Decimal[0] = (decimal)Math.PI; }
-            ArrayProperty_TimeSpan = new TimeSpan[arraySize];
+            ArrayProperty_TimeSpan ??= RentedBuffer<TimeSpan>.Shared.Rent(arraySize); ;
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_TimeSpan[i] = TimeSpan.FromTicks(rnd.Next(int.MinValue, int.MaxValue));
             }
             if (arraySize > 2) { ArrayProperty_TimeSpan[0] = TimeSpan.MinValue; ArrayProperty_TimeSpan[1] = TimeSpan.MaxValue; }
-            ArrayProperty_DateTime = new DateTime[arraySize];
+            ArrayProperty_DateTime ??= RentedBuffer<DateTime>.Shared.Rent(arraySize);
             for (int i = 0; i < arraySize; i++)
             {
                 ArrayProperty_DateTime[i] = new DateTime(DateTime.UtcNow.Ticks + (rnd.Next(int.MinValue, int.MaxValue)), DateTimeKind.Utc);
@@ -251,19 +291,57 @@ namespace ChillX.Serialization.Test.ChillXEntity
             result.VariantAPropertyChar = VariantAPropertyChar;
             result.m_IndependentPrivateFieldString = m_IndependentPrivateFieldString;
             result.m_IndependentPublicFieldString = m_IndependentPublicFieldString;
-            result.ArrayProperty_Char = new char[ArrayProperty_Char.Length]; Array.Copy(ArrayProperty_Char, result.ArrayProperty_Char, ArrayProperty_Char.Length);
-            result.ArrayProperty_Byte = new byte[ArrayProperty_Byte.Length]; Array.Copy(ArrayProperty_Byte, result.ArrayProperty_Byte, ArrayProperty_Byte.Length);
-            result.ArrayProperty_Short = new short[ArrayProperty_Short.Length]; Array.Copy(ArrayProperty_Short, result.ArrayProperty_Short, ArrayProperty_Short.Length);
-            result.ArrayProperty_Int = new int[ArrayProperty_Int.Length]; Array.Copy(ArrayProperty_Int, result.ArrayProperty_Int, ArrayProperty_Int.Length);
-            result.ArrayProperty_Long = new long[ArrayProperty_Long.Length]; Array.Copy(ArrayProperty_Long, result.ArrayProperty_Long, ArrayProperty_Long.Length);
-            result.ArrayProperty_UShort = new ushort[ArrayProperty_UShort.Length]; Array.Copy(ArrayProperty_UShort, result.ArrayProperty_UShort, ArrayProperty_UShort.Length);
-            result.ArrayProperty_UInt = new uint[ArrayProperty_UInt.Length]; Array.Copy(ArrayProperty_UInt, result.ArrayProperty_UInt, ArrayProperty_UInt.Length);
-            result.ArrayProperty_ULong = new ulong[ArrayProperty_ULong.Length]; Array.Copy(ArrayProperty_ULong, result.ArrayProperty_ULong, ArrayProperty_ULong.Length);
-            result.ArrayProperty_Single = new float[ArrayProperty_Single.Length]; Array.Copy(ArrayProperty_Single, result.ArrayProperty_Single, ArrayProperty_Single.Length);
-            result.ArrayProperty_Double = new double[ArrayProperty_Double.Length]; Array.Copy(ArrayProperty_Double, result.ArrayProperty_Double, ArrayProperty_Double.Length);
-            result.ArrayProperty_Decimal = new decimal[ArrayProperty_Decimal.Length]; Array.Copy(ArrayProperty_Decimal, result.ArrayProperty_Decimal, ArrayProperty_Decimal.Length);
-            result.ArrayProperty_TimeSpan = new TimeSpan[ArrayProperty_TimeSpan.Length]; Array.Copy(ArrayProperty_TimeSpan, result.ArrayProperty_TimeSpan, ArrayProperty_TimeSpan.Length);
-            result.ArrayProperty_DateTime = new DateTime[ArrayProperty_DateTime.Length]; Array.Copy(ArrayProperty_DateTime, result.ArrayProperty_DateTime, ArrayProperty_DateTime.Length);
+            //result.ArrayProperty_Char = new char[ArrayProperty_Char.Length]; Array.Copy(ArrayProperty_Char, result.ArrayProperty_Char, ArrayProperty_Char.Length);
+            //result.ArrayProperty_Byte = new byte[ArrayProperty_Byte.Length]; Array.Copy(ArrayProperty_Byte, result.ArrayProperty_Byte, ArrayProperty_Byte.Length);
+            //result.ArrayProperty_Short = new short[ArrayProperty_Short.Length]; Array.Copy(ArrayProperty_Short, result.ArrayProperty_Short, ArrayProperty_Short.Length);
+            //result.ArrayProperty_Int = new int[ArrayProperty_Int.Length]; Array.Copy(ArrayProperty_Int, result.ArrayProperty_Int, ArrayProperty_Int.Length);
+            //result.ArrayProperty_Long = new long[ArrayProperty_Long.Length]; Array.Copy(ArrayProperty_Long, result.ArrayProperty_Long, ArrayProperty_Long.Length);
+            //result.ArrayProperty_UShort = new ushort[ArrayProperty_UShort.Length]; Array.Copy(ArrayProperty_UShort, result.ArrayProperty_UShort, ArrayProperty_UShort.Length);
+            //result.ArrayProperty_UInt = new uint[ArrayProperty_UInt.Length]; Array.Copy(ArrayProperty_UInt, result.ArrayProperty_UInt, ArrayProperty_UInt.Length);
+            //result.ArrayProperty_ULong = new ulong[ArrayProperty_ULong.Length]; Array.Copy(ArrayProperty_ULong, result.ArrayProperty_ULong, ArrayProperty_ULong.Length);
+            //result.ArrayProperty_Single = new float[ArrayProperty_Single.Length]; Array.Copy(ArrayProperty_Single, result.ArrayProperty_Single, ArrayProperty_Single.Length);
+            //result.ArrayProperty_Double = new double[ArrayProperty_Double.Length]; Array.Copy(ArrayProperty_Double, result.ArrayProperty_Double, ArrayProperty_Double.Length);
+            //result.ArrayProperty_Decimal = new decimal[ArrayProperty_Decimal.Length]; Array.Copy(ArrayProperty_Decimal, result.ArrayProperty_Decimal, ArrayProperty_Decimal.Length);
+            //result.ArrayProperty_TimeSpan = new TimeSpan[ArrayProperty_TimeSpan.Length]; Array.Copy(ArrayProperty_TimeSpan, result.ArrayProperty_TimeSpan, ArrayProperty_TimeSpan.Length);
+            //result.ArrayProperty_DateTime = new DateTime[ArrayProperty_DateTime.Length]; Array.Copy(ArrayProperty_DateTime, result.ArrayProperty_DateTime, ArrayProperty_DateTime.Length);
+            result.ArrayProperty_Char = result.ArrayProperty_Char ?? RentedBuffer<char>.Shared.Rent(ArrayProperty_Char.Length);
+            result.ArrayProperty_Char += ArrayProperty_Char;
+
+            result.ArrayProperty_Byte = result.ArrayProperty_Byte ?? RentedBuffer<byte>.Shared.Rent(ArrayProperty_Byte.Length);
+            result.ArrayProperty_Byte += ArrayProperty_Byte;
+
+            result.ArrayProperty_Short = result.ArrayProperty_Short ?? RentedBuffer<short>.Shared.Rent(ArrayProperty_Short.Length);
+            result.ArrayProperty_Short += ArrayProperty_Short;
+
+            result.ArrayProperty_Int = result.ArrayProperty_Int ?? RentedBuffer<int>.Shared.Rent(ArrayProperty_Int.Length);
+            result.ArrayProperty_Int += ArrayProperty_Int;
+
+            result.ArrayProperty_Long = result.ArrayProperty_Long ?? RentedBuffer<long>.Shared.Rent(ArrayProperty_Long.Length);
+            result.ArrayProperty_Long += ArrayProperty_Long;
+
+            result.ArrayProperty_UShort = result.ArrayProperty_UShort ?? RentedBuffer<ushort>.Shared.Rent(ArrayProperty_UShort.Length);
+            result.ArrayProperty_UShort += ArrayProperty_UShort;
+
+            result.ArrayProperty_UInt = result.ArrayProperty_UInt ?? RentedBuffer<uint>.Shared.Rent(ArrayProperty_UInt.Length);
+            result.ArrayProperty_UInt += ArrayProperty_UInt;
+
+            result.ArrayProperty_ULong = result.ArrayProperty_ULong ?? RentedBuffer<ulong>.Shared.Rent(ArrayProperty_ULong.Length);
+            result.ArrayProperty_ULong += ArrayProperty_ULong;
+
+            result.ArrayProperty_Single = result.ArrayProperty_Single ?? RentedBuffer<float>.Shared.Rent(ArrayProperty_Single.Length);
+            result.ArrayProperty_Single += ArrayProperty_Single;
+
+            result.ArrayProperty_Double = result.ArrayProperty_Double ?? RentedBuffer<double>.Shared.Rent(ArrayProperty_Double.Length);
+            result.ArrayProperty_Double += ArrayProperty_Double;
+
+            result.ArrayProperty_Decimal = result.ArrayProperty_Decimal ?? RentedBuffer<decimal>.Shared.Rent(ArrayProperty_Decimal.Length);
+            result.ArrayProperty_Decimal += ArrayProperty_Decimal;
+
+            result.ArrayProperty_TimeSpan = result.ArrayProperty_TimeSpan ?? RentedBuffer<TimeSpan>.Shared.Rent(ArrayProperty_TimeSpan.Length);
+            result.ArrayProperty_TimeSpan += ArrayProperty_TimeSpan;
+
+            result.ArrayProperty_DateTime = result.ArrayProperty_DateTime ?? RentedBuffer<DateTime>.Shared.Rent(ArrayProperty_DateTime.Length);
+            result.ArrayProperty_DateTime += ArrayProperty_DateTime;
             return result;
         }
 
@@ -358,6 +436,18 @@ namespace ChillX.Serialization.Test.ChillXEntity
             }
             return true;
         }
+        public bool IsArrayEqual<T>(RentedBuffer<T> x, RentedBuffer<T> y)
+            where T : struct
+        {
+            if ((x == null) && (y == null)) { return true; }
+            if ((x == null) || (y == null)) { return false; }
+            if (x.Length != y.Length) { return false; }
+            for (int I = 0; I < x.Length; I++)
+            {
+                if (!x[I].Equals(y[I])) { return false; }
+            }
+            return true;
+        }
 
         public bool Equals(TestClassVariantA? x, TestClassVariantA? y)
         {
@@ -402,6 +492,68 @@ namespace ChillX.Serialization.Test.ChillXEntity
         public override int GetHashCode()
         {
             return base.GetHashCode();
+        }
+
+        private bool m_IsDisposed = false;
+        public void Dispose()
+        {
+            if (!m_IsDisposed)
+            {
+                m_IsDisposed = true;
+                if (ArrayProperty_Char != null)
+                {
+                    ArrayProperty_Char.Return(); ArrayProperty_Char = null;
+                }
+                if (ArrayProperty_Byte != null)
+                {
+                    ArrayProperty_Byte.Return(); ArrayProperty_Byte = null;
+                }
+                if (ArrayProperty_Short != null)
+                {
+                    ArrayProperty_Short.Return(); ArrayProperty_Short = null;
+                }
+                if (ArrayProperty_Int != null)
+                {
+                    ArrayProperty_Int.Return(); ArrayProperty_Int = null;
+                }
+                if (ArrayProperty_Long != null)
+                {
+                    ArrayProperty_Long.Return(); ArrayProperty_Long = null;
+                }
+                if (ArrayProperty_UShort != null)
+                {
+                    ArrayProperty_UShort.Return(); ArrayProperty_UShort = null;
+                }
+                if (ArrayProperty_UInt != null)
+                {
+                    ArrayProperty_UInt.Return(); ArrayProperty_UInt = null;
+                }
+                if (ArrayProperty_ULong != null)
+                {
+                    ArrayProperty_ULong.Return(); ArrayProperty_ULong = null;
+                }
+                if (ArrayProperty_Single != null)
+                {
+                    ArrayProperty_Single.Return(); ArrayProperty_Single = null;
+                }
+                if (ArrayProperty_Double != null)
+                {
+                    ArrayProperty_Double.Return(); ArrayProperty_Double = null;
+                }
+                if (ArrayProperty_Decimal != null)
+                {
+                    ArrayProperty_Decimal.Return(); ArrayProperty_Decimal = null;
+                }
+                if (ArrayProperty_TimeSpan != null)
+                {
+                    ArrayProperty_TimeSpan.Return(); ArrayProperty_TimeSpan = null;
+                }
+                if (ArrayProperty_DateTime != null)
+                {
+                    ArrayProperty_DateTime.Return(); ArrayProperty_DateTime = null;
+                }
+                GC.SuppressFinalize(this);
+            }
         }
     }
 

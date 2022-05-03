@@ -31,100 +31,100 @@ using System.Threading.Tasks;
 
 namespace ChillX.Serialization.Benchmark.ChillXEntity
 {
-    [LightSpeedEntityAttribute(1)]
+    [SerializedEntityAttribute(1)]
     public class TestClassVariantA : IEqualityComparer<TestClassVariantA>
     {
         private int m_VariantABackingPropertyOne = 1;
-        [LightSpeedSerializeAttribute(1)]
+        [SerializedMemberAttribute(1)]
         public int VariantABackingPropertyOne { get { return m_VariantABackingPropertyOne; } set { m_VariantABackingPropertyOne = value; } }
 
-        [LightSpeedSerializeAttribute(2)]
+        [SerializedMemberAttribute(2)]
         private int m_IndependentPrivateFieldOne = 2;
 
-        [LightSpeedSerializeAttribute(3)]
+        [SerializedMemberAttribute(3)]
         public int m_IndependentPublicFieldOne = 3;
-        [LightSpeedSerializeAttribute(4)]
+        [SerializedMemberAttribute(4)]
         public int VariantAPropertyOne { get; set; } = 4;
 
-        [LightSpeedSerializeAttribute(5)]
+        [SerializedMemberAttribute(5)]
         public short VariantAPropertyShort { get; set; } = 5;
 
-        [LightSpeedSerializeAttribute(6)]
+        [SerializedMemberAttribute(6)]
         public long VariantAPropertyLong { get; set; } = 6;
 
-        [LightSpeedSerializeAttribute(7)]
+        [SerializedMemberAttribute(7)]
         public UInt16 VariantAPropertyUInt16 { get; set; } = 7;
 
-        [LightSpeedSerializeAttribute(8)]
+        [SerializedMemberAttribute(8)]
         public UInt32 VariantAPropertyUInt32 { get; set; } = 8;
 
-        [LightSpeedSerializeAttribute(9)]
+        [SerializedMemberAttribute(9)]
         public UInt64 VariantAPropertyUInt64 { get; set; } = 9;
 
-        [LightSpeedSerializeAttribute(10)]
+        [SerializedMemberAttribute(10)]
         public float VariantAPropertyHalf { get; set; } = 1.1f;
 
-        [LightSpeedSerializeAttribute(11)]
+        [SerializedMemberAttribute(11)]
         public float VariantAPropertyFloat { get; set; } = 1.1f;
 
-        [LightSpeedSerializeAttribute(12)]
+        [SerializedMemberAttribute(12)]
         public Single VariantAPropertySingle { get; set; } = 1.1f;
 
-        [LightSpeedSerializeAttribute(13)]
+        [SerializedMemberAttribute(13)]
         public double VariantAPropertyDouble { get; set; } = 1.2d;
 
-        [LightSpeedSerializeAttribute(14)]
+        [SerializedMemberAttribute(14)]
         public bool VariantAPropertyBool { get; set; } = true;
 
-        [LightSpeedSerializeAttribute(15)]
+        [SerializedMemberAttribute(15)]
         public string VariantAPropertyString { get; set; } = @"VariantAPropertyString";
 
-        [LightSpeedSerializeAttribute(16)]
+        [SerializedMemberAttribute(16)]
         public char VariantAPropertyChar { get; set; } = 'C';
 
-        [LightSpeedSerializeAttribute(17)]
+        [SerializedMemberAttribute(17)]
         private string m_IndependentPrivateFieldString = @"m_IndependentPrivateFieldString";
 
-        [LightSpeedSerializeAttribute(18)]
+        [SerializedMemberAttribute(18)]
         public string m_IndependentPublicFieldString = @"m_IndependentPublicFieldString";
 
-        [LightSpeedSerializeAttribute(19)]
+        [SerializedMemberAttribute(19)]
         public char[] ArrayProperty_Char { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(20)]
+        [SerializedMemberAttribute(20)]
         public byte[] ArrayProperty_Byte { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(21)]
+        [SerializedMemberAttribute(21)]
         public short[] ArrayProperty_Short { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(22)]
+        [SerializedMemberAttribute(22)]
         public int[] ArrayProperty_Int { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(23)]
+        [SerializedMemberAttribute(23)]
         public long[] ArrayProperty_Long { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(24)]
+        [SerializedMemberAttribute(24)]
         public ushort[] ArrayProperty_UShort { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(25)]
+        [SerializedMemberAttribute(25)]
         public uint[] ArrayProperty_UInt { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(26)]
+        [SerializedMemberAttribute(26)]
         public ulong[] ArrayProperty_ULong { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(27)]
+        [SerializedMemberAttribute(27)]
         public float[] ArrayProperty_Single { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(28)]
+        [SerializedMemberAttribute(28)]
         public double[] ArrayProperty_Double { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(29)]
+        [SerializedMemberAttribute(29)]
         public decimal[] ArrayProperty_Decimal { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(30)]
+        [SerializedMemberAttribute(30)]
         public TimeSpan[] ArrayProperty_TimeSpan { get; set; } = null;
 
-        [LightSpeedSerializeAttribute(31)]
+        [SerializedMemberAttribute(31)]
         public DateTime[] ArrayProperty_DateTime { get; set; } = null;
 
         public TestClassVariantA RandomizeData(Random rnd, int arraySize)

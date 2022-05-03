@@ -9,13 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.Threading", "src\Chi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{000E7125-66EB-4595-9B29-C0A9B306E8E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChillX.Core", "src\ChillX.Core\ChillX.Core.csproj", "{37BC1D2E-6B0B-4F8C-B9D1-2703A208DDCC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.Core", "src\ChillX.Core\ChillX.Core.csproj", "{37BC1D2E-6B0B-4F8C-B9D1-2703A208DDCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChillX.Serialization", "src\ChillX.Serialization\ChillX.Serialization.csproj", "{939F5B45-BBA9-456D-B213-6E0D187421F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.Serialization", "src\ChillX.Serialization\ChillX.Serialization.csproj", "{939F5B45-BBA9-456D-B213-6E0D187421F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChillX.Serialization.Test", "src\TestApps\ChillX.SerializationTest\ChillX.Serialization.Test.csproj", "{1676244E-493D-4CC1-A390-F42E3153C8BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.Serialization.Test", "src\TestApps\ChillX.SerializationTest\ChillX.Serialization.Test.csproj", "{1676244E-493D-4CC1-A390-F42E3153C8BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChillX.Serialization.Benchmark", "src\TestApps\ChillX.Serialization.Benchmark\ChillX.Serialization.Benchmark.csproj", "{CF20AADD-830E-4777-9944-74E4637D898D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.Serialization.Benchmark", "src\TestApps\ChillX.Serialization.Benchmark\ChillX.Serialization.Benchmark.csproj", "{CF20AADD-830E-4777-9944-74E4637D898D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChillX.Logging.Test", "src\TestApps\ChillX.LoggingTest\ChillX.Logging.Test.csproj", "{A9487EB0-D827-42E4-8A6E-5874D3402EFB}"
 EndProject

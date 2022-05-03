@@ -22,17 +22,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ChillX.Core.CapabilityInterfaces;
 
-namespace ChillX.Serialization
+namespace ChillX.Core.CapabilityBase
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
-    public sealed class SerializedEntityAttribute : Attribute
+    public abstract class ExpiryBase : ISupportExpiry
     {
-        public readonly UInt16 Index;
+        public virtual DateTime LastUsedTimeUTC { get; protected set; }
 
-        public SerializedEntityAttribute(UInt16 index)
+        public virtual void ExtendLastUsedTimeUTC(DateTime newLastUsedTimeUTC)
         {
-            this.Index = index;
+            LastUsedTimeUTC = newLastUsedTimeUTC;
         }
     }
 }

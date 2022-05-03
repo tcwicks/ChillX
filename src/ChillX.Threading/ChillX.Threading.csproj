@@ -8,4 +8,8 @@
     <Folder Include="Prioritized\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ChillX.Core\ChillX.Core.csproj" />
+  </ItemGroup>
+
 </Project>

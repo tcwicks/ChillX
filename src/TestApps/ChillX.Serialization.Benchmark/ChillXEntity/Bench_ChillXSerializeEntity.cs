@@ -74,9 +74,9 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
 
         //private ThreadSafeQueue<ChillXEntity.TestClassVariantA> Queue_ChillX = new ThreadSafeQueue<ChillXEntity.TestClassVariantA>();
 
-        private ThreadSafeQueue<RentedBuffer> Queue_Buffer = new ThreadSafeQueue<RentedBuffer>();
+        private ThreadSafeQueue<RentedBuffer<byte>> Queue_Buffer = new ThreadSafeQueue<RentedBuffer<byte>>();
         //private ThreadSafeQueue<ChillXLightSpeed.RentedBuffer> Queue_RentedBuffer = new ThreadSafeQueue<ChillXLightSpeed.RentedBuffer>();
-        private TypedSerializer<ChillXEntity.TestClassVariantA> Serializer = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
+        //private TypedSerializer<ChillXEntity.TestClassVariantA> Serializer = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
 
         private ChillXEntity.TestClassVariantA TestClassOne = TestClassOne_Create(rnd, 64);
         private static ChillXEntity.TestClassVariantA TestClassOne_Create(Random rnd, int stringSize)
@@ -137,7 +137,7 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
                 //{
                 //    Thread.Sleep(0);
                 //}
-                Queue_Buffer.Enqueue(Serializer.ReadToRentedBuffer(TestClassInstance));
+                Queue_Buffer.Enqueue(ChillXSerializer<ChillXEntity.TestClassVariantA>.ReadToRentedBuffer(TestClassInstance));
                 Counter++;
                 //if (Counter > 100)
                 //{
@@ -154,7 +154,7 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
         protected override void Subscribe()
         {
             ChillXEntity.TestClassVariantA TestClassInstance = TestClassOne.Clone();
-            RentedBuffer buffer;
+            RentedBuffer<byte> buffer;
             int bytesConsumed;
             //while (ThreadsIsRunning || Queue_Buffer.HasItems())
             //{
@@ -178,15 +178,15 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
                 buffer = Queue_Buffer.DeQueue();
                 if (buffer != null)
                 {
-                    if (buffer.buffer == null)
+                    if (buffer._rawBufferInternal == null)
                     {
 
                     }
                     else
                     {
-                        Serializer.Write(TestClassInstance, buffer.buffer, out bytesConsumed);
+                        ChillXSerializer<ChillXEntity.TestClassVariantA>.Write(TestClassInstance, buffer._rawBufferInternal, out bytesConsumed);
                     }
-                    buffer.Dispose();
+                    buffer.Return();
                     //lock (SizeLock) { pendingSize--; }
                 }
                 else

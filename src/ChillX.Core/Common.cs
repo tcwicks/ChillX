@@ -23,16 +23,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChillX.Serialization
+namespace ChillX.Core
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
-    public sealed class SerializedEntityAttribute : Attribute
+    public class Common
     {
-        public readonly UInt16 Index;
-
-        public SerializedEntityAttribute(UInt16 index)
-        {
-            this.Index = index;
-        }
+        /// <summary>
+        /// Quick and dirty just a lot more convenient than adding #Defines. Especialy given that this is short term.
+        /// </summary>
+        public const bool EnableDebug = false;
     }
 }

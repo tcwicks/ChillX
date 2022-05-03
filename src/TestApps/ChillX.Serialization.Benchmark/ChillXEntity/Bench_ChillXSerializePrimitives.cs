@@ -25,6 +25,7 @@ Notice: This bencmark app uses Messagepack purely for performance comparison
 
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
+using ChillX.Core.Structures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,11 +42,11 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
     [SimpleJob(RuntimeMoniker.Net60)]
     public class Bench_ChillXSerializePrimitives : BenchBase
     {
-        [Params(500000)]
+        [Params(10000000)]
         public int numRepititions;
 
         private int m_numThreads;
-        [Params(1, 2, 4)]
+        [Params(1)]
         public override int numThreads
         {
             get
@@ -60,7 +61,7 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
 
 
         private int m_stringSize;
-        [Params(8192)]
+        [Params(64)]
         public int stringSize
         {
             get { return m_stringSize; }
@@ -79,12 +80,15 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
         private int numReps;
         private string TestString;
         private byte[] TestBuffer;
-        private Enum_TestType TestType;
+        [Params(Enum_TestType.StringToByte, Enum_TestType.ByteToString, Enum_TestType.StringToByteViaChar, Enum_TestType.ByteToStringViaChar)]
+        public Enum_TestType TestType;
 
-        private enum Enum_TestType
+        public enum Enum_TestType
         {
             StringToByte = 0,
             ByteToString = 1,
+            StringToByteViaChar = 2,
+            ByteToStringViaChar = 3,
         }
 
         protected override void OnGlobalSetup()
@@ -102,20 +106,8 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
 
 
         [Benchmark]
-        public void BenchSerialize_StringToByte()
+        public void BenchSerialize_String()
         {
-            TestType = Enum_TestType.StringToByte;
-            ThreadRunOneItteration();
-            while (NumThreadsRunning > 0)
-            {
-                Thread.Sleep(1);
-            }
-        }
-
-        [Benchmark]
-        public void BenchSerialize_ByteToString()
-        {
-            TestType = Enum_TestType.ByteToString;
             ThreadRunOneItteration();
             while (NumThreadsRunning > 0)
             {
@@ -139,27 +131,78 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
                 case Enum_TestType.ByteToString:
                     Test_ByteToString();
                     break;
+                case Enum_TestType.StringToByteViaChar:
+                    Test_StringToByteViaChar();
+                    break;
+                case Enum_TestType.ByteToStringViaChar:
+                    Test_ByteToStringViaChar();
+                    break;
             }
         }
         private void Test_StringToByte()
         {
             byte[] buffer;
             string StringInstance;
+            int numBytes;
             StringInstance = TestString;
+            numBytes = BitConverterExtended.GetByteCountUTF8String(StringInstance);
+            buffer= new byte[numBytes];
             for (int I = 0; I < numReps; I++)
             {
-                buffer = Encoding.UTF8.GetBytes(StringInstance);
+                //buffer = Encoding.UTF8.GetBytes(StringInstance);
+                numBytes = BitConverterExtended.GetByteCountUTF8String(StringInstance);
+                BitConverterExtended.GetBytesUTF8String(StringInstance, buffer, 0);
             }
+            buffer= new byte[numBytes];
+        }
+
+        private void Test_StringToByteViaChar()
+        {
+            byte[] buffer;
+            char[] charArray = TestString.ToCharArray();
+            int numBytes = charArray.Length * 2;
+            buffer = new byte[numBytes];
+            for (int I = 0; I < numReps; I++)
+            {
+                charArray = TestString.ToCharArray();
+                numBytes = BitConverterExtended.GetBytes(charArray, buffer, 0);
+            }
+            buffer= new byte[numBytes];
         }
         private void Test_ByteToString()
         {
             byte[] buffer;
-            string Deserialized;
-            buffer = new List<byte>(TestBuffer).ToArray();
+            string Deserialized = String.Empty;
+            string StringInstance;
+            int numBytes;
+            StringInstance = TestString;
+            numBytes = BitConverterExtended.GetByteCountUTF8String(StringInstance);
+            buffer = new byte[numBytes];
+            BitConverterExtended.GetBytesUTF8String(StringInstance, buffer, 0);
             for (int I = 0; I < numReps; I++)
             {
-                Deserialized = Encoding.UTF8.GetString(buffer);
+                //Deserialized = Encoding.UTF8.GetString(buffer);
+                Deserialized = BitConverterExtended.ToString(buffer, 0, numBytes);
             }
+            numBytes = Deserialized.Length;
+        }
+
+        private void Test_ByteToStringViaChar()
+        {
+            byte[] buffer;
+            string Deserialized = String.Empty;
+            char[] charArray;
+            charArray = TestString.ToCharArray();
+            int numBytes = charArray.Length * 2;
+            buffer = new byte[numBytes];
+            numBytes = BitConverterExtended.GetBytes(charArray, buffer, 0);
+            for (int I = 0; I < numReps; I++)
+            {
+                charArray = BitConverterExtended.ToCharArray(buffer, 0, numBytes);
+                Deserialized = new string(charArray);
+            }
+            numBytes = Deserialized.Length * 2;
+            buffer = new byte[numBytes];
         }
 
         protected override void Subscribe()

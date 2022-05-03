@@ -347,8 +347,18 @@ namespace ChillX.Threading.Test // Note: actual namespace depends on the project
                 , _logMessageMethod: Handler_LogMessage
                 );
 
+            //ThreadedProcessor = new AsyncThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority>(
+            //    _maxWorkItemLimitPerClient: int.MaxValue
+            //    , _maxWorkerThreads: 16
+            //    , _threadStartupPerWorkItems: 4
+            //    , _threadStartupMinQueueSize: 4
+            //    , _idleWorkerThreadExitSeconds: 10
+            //    , _abandonedResponseExpirySeconds: 5
+            //    , _processRequestMethod: ProcessRequest
+            //    , _logErrorMethod: Handler_LogError
+            //    , _logMessageMethod: Handler_LogMessage
+            //    );
 
-            ThreadedWorkItemProcessor<DummyRequest, DummyResponse, string, WorkItemPriority> blah;
 
             BackendAPICallMS = 0;
             Stopwatch SW;
@@ -366,7 +376,7 @@ namespace ChillX.Threading.Test // Note: actual namespace depends on the project
             SW.Start();
             Test();
             SW.Stop();
-            Console.WriteLine(string.Concat(@"Baseline Processing Overhead At 1ms Per Unit Of Work: 1000 Calls : ", SW.Elapsed.ToString()));
+            Console.WriteLine(string.Concat(@"Baseline Processing Overhead (Thread Context Switch) At 1ms Per Unit Of Work: 1000 Calls : ", SW.Elapsed.ToString()));
 
 
             for (int N = UnitOfWorkProcessingMS_Start; N <= UnitOfWorkProcessingMS_End; N++)
@@ -523,10 +533,12 @@ namespace ChillX.Threading.Test // Note: actual namespace depends on the project
 
             DummyResponse response;
             response = GetResponse(new DummyRequest() { orderID = 1 }, 0);
-            ThreadedProcessor.ShutDown(60);
+            ThreadedProcessor.ShutDown(10);
+            //ThreadedProcessor.ShutDown();
         }
 
         private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority> ThreadedProcessor;
+        //private static AsyncThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority> ThreadedProcessor;
             
         private static Random Rnd = new Random();
         private static void Test()
@@ -540,7 +552,7 @@ namespace ChillX.Threading.Test // Note: actual namespace depends on the project
                 workItem.Request = new DummyRequest() { orderID = Rnd.Next(0, 20) };
 
                 response = ProcessRequest(workItem);
-                if (response.orderID != I)
+                if (response.orderID != workItem.Request.orderID)
                 {
                     Console.WriteLine(string.Concat(@"Request Response ID Missmatch:- RequestID: ", I.ToString(), @" - ResponseID: ", response.orderID.ToString()));
                 }
