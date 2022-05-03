@@ -23,7 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChillX.Threading.Complete
+namespace ChillX.Threading.APIProcessor
 {
     public class ThreadWorkItem<TRequest, TResponse, TClientID> : IEqualityComparer<ThreadWorkItem<TRequest, TResponse, TClientID>>
         where TClientID : IComparable, IConvertible

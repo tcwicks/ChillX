@@ -30,5 +30,6 @@ namespace ChillX.Threading.Test
     internal struct DummyResponse
     {
         public int orderID;
+        public string errorMessage;
     }
 }

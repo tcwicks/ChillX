@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-using ChillX.Threading.Complete;
+using ChillX.Threading.APIProcessor;
 using System.Diagnostics;
 
 namespace ChillX.Threading.Test // Note: actual namespace depends on the project name.
@@ -240,7 +240,7 @@ namespace ChillX.Threading.Test // Note: actual namespace depends on the project
 
 
 
-    //Example Usage for WebAPI controller 
+    //Example Usage for WebAPI controller
     //class Example
     //{
     //    private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority> ThreadedProcessorExample = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority>(
@@ -255,6 +255,11 @@ namespace ChillX.Threading.Test // Note: actual namespace depends on the project
     //            , _logMessageMethod: Handler_LogMessage
     //            );
 
+    //    private static DummyResponse ProcessRequestMethod()
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+
     //    public async Task<DummyResponse> GetResponse([FromBody] DummyRequest _request)
     //    {
     //        int clientID = 1; //Replace with the client ID from your authentication mechanism if using per client request caps. Otherwise just hardcode to maybe 0 or whatever
@@ -265,7 +270,7 @@ namespace ChillX.Threading.Test // Note: actual namespace depends on the project
     //        {
     //            //Client has exceeded maximum number of concurrent requests or Application Pool is shutting down
     //            //return a suitable error message here
-    //            return new DummyResponse() { ErrorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
+    //            return new DummyResponse() { errorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
     //        }
 
     //        //If you need the result (Like in a webapi controller) then do this
@@ -281,15 +286,15 @@ namespace ChillX.Threading.Test // Note: actual namespace depends on the project
     //        {
     //            //Processing timeout or Application Pool is shutting down
     //            //return a suitable error message here
-    //            return new DummyResponse() { ErrorMessage = @"Internal system timeout or service is restarting. Please retry request later." };
+    //            return new DummyResponse() { errorMessage = @"Internal system timeout or service is restarting. Please retry request later." };
     //        }
     //        return workItemResult.Value.Response;
     //    }
 
-    //    public static DummyResponse ProcessRequestMethod(DummyRequest request)
+    //    public static DummyResponse ProcessRequestMethod(ThreadWorkItem<DummyRequest, DummyResponse, int> request)
     //    {
     //        // Process the request and return the response
-    //        return new DummyResponse() { orderID = request.orderID };
+    //        return new DummyResponse() { orderID = request.Request.orderID };
     //    }
     //    public static void Handler_LogError(Exception ex)
     //    {
