@@ -307,6 +307,93 @@ namespace ChillX.Threading.Test // Note: actual namespace depends on the project
     //    }
     //}
 
+    //public class ExampleBulkControllerForSocketDataProcessor
+    //{
+    //    public struct MyWorkItem
+    //    {
+    //        public int Id;
+    //        public string Name;
+    //        public string Description;
+    //    }
+    //    public enum WorkItemPriority
+    //    {
+    //        Low = 0,
+    //        Medium = 1,
+    //        High = 2,
+    //    }
+
+    //    /// <summary>
+    //    /// Call this method with each incomming packet of data
+    //    /// </summary>
+    //    public void ScheduleDataPacketForProcessing(byte[] buffer, int clientID, WorkItemPriority priority)
+    //    {
+    //        ThreadedProcessorExample.ScheduleWorkItem(priority,buffer, clientID);
+    //    }
+
+    //    /// <summary>
+    //    /// Call this method to retrieve processed results
+    //    /// </summary>
+    //    /// <param name="success">True if processed work item was available. False if no processed work items are available</param>
+    //    /// <returns></returns>
+    //    public MyWorkItem GetProcessedData(out bool success)
+    //    {
+    //        BulkProcessor.ThreadWorkItem<byte[], MyWorkItem, int> workItem;
+    //        if (ThreadedProcessorExample.TryGetProcessedWorkItem(out workItem))
+    //        {
+    //            success = true;
+    //            return workItem.Response;
+    //        }
+    //        success = false;
+    //        return default;
+    //    }
+
+    //    //Use this
+    //    private static Threading.BulkProcessor.ThreadedWorkItemProcessor<byte[], MyWorkItem, int, WorkItemPriority> ThreadedProcessorExample = new Threading.BulkProcessor.ThreadedWorkItemProcessor<byte[], MyWorkItem, int, WorkItemPriority>(
+    //                _maxWorkItemLimitPerClient: 100 // Maximum number of concurrent requests in the processing queue per client. Set to int.MaxValue to disable concurrent request caps
+    //                , _maxWorkerThreads: 4 // Maximum number of threads to scale upto
+    //                , _threadStartupPerWorkItems: 4 // Consider starting a new processing thread ever X requests
+    //                , _threadStartupMinQueueSize: 4 // Do NOT start a new processing thread if work item queue is below this size
+    //                , _idleWorkerThreadExitSeconds: 10 // Idle threads will exit after X seconds
+    //                , _processedQueueMaxSize: 100 // Not yet implemented
+    //                , _processedItemAutoDispose: false //If true the work items will be discarded once processing is complete
+    //                , _processRequestMethod: ProcessRequestMethod // Your Do Work method for processing the request
+    //                , _logErrorMethod: Handler_LogError
+    //                , _logMessageMethod: Handler_LogMessage
+    //                );
+
+    //    //Or comment the above and uncomment this
+    //    //private static Threading.BulkProcessor.AsyncThreadedWorkItemProcessor<byte[], MyWorkItem, int, WorkItemPriority> ThreadedProcessorExample = new Threading.BulkProcessor.AsyncThreadedWorkItemProcessor<byte[], MyWorkItem, int, WorkItemPriority>(
+    //    //           _maxWorkItemLimitPerClient: 100 // Maximum number of concurrent requests in the processing queue per client. Set to int.MaxValue to disable concurrent request caps
+    //    //           , _maxWorkerThreads: 4 // Maximum number of threads to scale upto
+    //    //           , _threadStartupPerWorkItems: 4 // serves no purpose in this implementation. Provided only for interchangeability with ThreadedWorkItemProcessor
+    //    //           , _threadStartupMinQueueSize: 4 // serves no purpose in this implementation. Provided only for interchangeability with ThreadedWorkItemProcessor
+    //    //           , _idleWorkerThreadExitSeconds: 10 // serves no purpose in this implementation. Provided only for interchangeability with ThreadedWorkItemProcessor
+    //    //           , _processedQueueMaxSize: 100 // Not yet implemented
+    //    //           , _processedItemAutoDispose: false //If true the work items will be discarded once processing is complete
+    //    //           , _processRequestMethod: ProcessRequestMethod // Your Do Work method for processing the request
+    //    //           , _logErrorMethod: Handler_LogError
+    //    //           , _logMessageMethod: Handler_LogMessage
+    //    //           );
+
+
+    //    private static MyWorkItem ProcessRequestMethod(byte[] request)
+    //    {
+    //        // Do whatever processing that is desired and create the response
+    //        return new MyWorkItem();
+    //    }
+
+
+    //    public static void Handler_LogError(Exception ex)
+    //    {
+    //        //Log unhandled exception here
+    //    }
+
+    //    private static void Handler_LogMessage(string _message, bool _isError, bool _isWarning)
+    //    {
+    //        //Log message here
+    //    }
+    //}
+
     public enum WorkItemPriority
     {
         Low = 0,
