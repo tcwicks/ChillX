@@ -37,7 +37,7 @@ namespace ChillX.Serialization
             return new TypedSerializer<TObject>().LoadDefinition();
         }
 
-        public int EntityIndex { get; private set; }
+        public UInt16 EntityIndex { get; private set; }
         private bool HasDynamicData = false;
         private int DataSizeFixed;
         private int NumMembers;

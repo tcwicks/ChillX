@@ -27,13 +27,12 @@ using System.Threading;
 
 namespace ChillX.Core.Structures
 {
-    public class ThreadSafeQueue<T>
+    public class ThreadSafeQueue<T> : IDisposable
     {
         private Queue<T> m_Queue = new Queue<T>();
         private ReaderWriterLockSlim m_Lock = new ReaderWriterLockSlim();
         public ThreadSafeQueue()
         {
-
         }
 
         public void Enqueue(T item)
@@ -166,6 +165,44 @@ namespace ChillX.Core.Structures
             return counter;
         }
 
+        public int DeQueue(ThreadSafeQueue<T> destinationQueue)
+        {
+            int counter = 0;
+            m_Lock.EnterWriteLock();
+            try
+            {
+                while (m_Queue.Count > 0)
+                {
+                    counter++;
+                    destinationQueue.Enqueue(m_Queue.Dequeue());
+                }
+            }
+            finally
+            {
+                m_Lock.ExitWriteLock();
+            }
+            return counter;
+        }
+
+        public int DeQueue(Queue<T> destinationQueue)
+        {
+            int counter = 0;
+            m_Lock.EnterWriteLock();
+            try
+            {
+                while (m_Queue.Count > 0)
+                {
+                    counter++;
+                    destinationQueue.Enqueue(m_Queue.Dequeue());
+                }
+            }
+            finally
+            {
+                m_Lock.ExitWriteLock();
+            }
+            return counter;
+        }
+
         public T DeQueue()
         {
             m_Lock.EnterWriteLock();
@@ -182,7 +219,24 @@ namespace ChillX.Core.Structures
             }
             return default(T);
         }
-    }
 
+        private bool m_IsDisposed = false;
+        public void Dispose()
+        {
+            if (!m_IsDisposed)
+            {
+                m_IsDisposed = true;
+                DoDispose(true);
+            }
+        }
+        private void DoDispose(bool isDisposing)
+        {
+            if (isDisposing)
+            {
+                m_Lock.Dispose();
+                m_Lock = null;
+            }
+        }
+    }
     
 }

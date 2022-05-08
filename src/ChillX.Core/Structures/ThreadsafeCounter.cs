@@ -30,13 +30,19 @@ namespace ChillX.Core.Structures
     {
         public ThreadsafeCounter(int _minValue = 0, int _maxValue = 1000000)
         {
+            if (_maxValue <= MinValue) { throw new ArgumentException(@"_maxValue must be greater than _minValue"); }
             m_MinValue = _minValue;
-            m_MaxValue = _maxValue - 1;
+            m_MaxValue = _maxValue;
+            m_ResetValue = _minValue - 1;
+            _value = m_ResetValue;
         }
+        private readonly object SyncLock = new object();
         private int m_MinValue = 1;
         public int MinValue { get { return m_MinValue; } }
         private int m_MaxValue = 100000;
         public int MaxValue { get { return m_MaxValue; } }
+        private int m_ResetValue = 1;
+        public int ResetValue { get { return m_ResetValue; } }
 
         private volatile int _value = 0;
         public int Value
@@ -53,12 +59,12 @@ namespace ChillX.Core.Structures
             int result = Interlocked.Increment(ref _value);
             if (result > m_MaxValue)
             {
-                lock (this)
+                lock(SyncLock)
                 {
                     result = _value;
                     if (result > m_MaxValue)
                     {
-                        Interlocked.Exchange(ref _value, MinValue);
+                        Interlocked.Exchange(ref _value, m_ResetValue);
                     }
                 }
                 result = Interlocked.Increment(ref _value);

@@ -201,18 +201,20 @@ namespace ChillX.Serialization.Test
             ValidateIntegrity.Validate();
 
             EnableCalculateOverheads = false;
-            EnableReadOnlyProcessNoQueue = true;
-            EnableWriteOnlyProcessNoQueue = true;
-            EnableReadOnlyProcessWithQueue = true;
-            EnableWriteOnlyProcessWithQueue = true;
+            EnableReadOnlyProcessNoQueue = false;
+            EnableWriteOnlyProcessNoQueue = false;
+            EnableReadOnlyProcessWithQueue = false;
+            EnableWriteOnlyProcessWithQueue = false;
             EnableRoundTripProcessWithQueue = true;
-            EnableRoundTripProcessIntegrity = true;
+            EnableRoundTripProcessIntegrity = false;
 
             //Console.WriteLine(@"Press Enter To Continue");
             //Console.ReadLine();
             Console.Clear();
-            ChillXSerializerPerformanceTest(50000, 64, 1, 2, 4, 9);
-            MessagePackPerformanceTest(50000, 64, 1, 2, 4, 9);
+            ChillXSerializerPerformanceTest(50000, 256, 1, 1, 1, 9);
+            MessagePackPerformanceTest(50000, 256, 1, 1, 1, 9);
+
+            
 
             Console.WriteLine(@"");
             Console.WriteLine(@"Press enter to quit");
@@ -795,17 +797,21 @@ namespace ChillX.Serialization.Test
             RentedBuffer<byte> buffer;
             ChillXEntity.TestClassVariantA TestClassOne;
             //TypedSerializer<ChillXEntity.TestClassVariantA> SerializerLocal = TypedSerializer<ChillXEntity.TestClassVariantA>.Create();
+            TestClassOne = Queue_ChillX.DeQueue();
             BenchWaitHandle.WaitOne();
-            while (ThreadsIsRunning)
+            for (int I = 0; I < numRepititions / 1000; I++)
             {
-                if (Queue_RentedBuffer.Count < 20000)
+                for (int N = 0; N < 1000; N++)
                 {
-                    TestClassOne = Queue_ChillX.DeQueue();
                     if (TestClassOne != null)
                     {
-                        buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.ReadToRentedBuffer(TestClassOne);
+                        buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.ReadToRentedBuffer(TestClassOne.Clone());
                         Queue_RentedBuffer.Enqueue(buffer);
                     }
+                }
+                while(Queue_RentedBuffer.Count > 5000)
+                {
+                    Thread.Sleep(0);
                 }
             }
         }
@@ -1477,6 +1483,8 @@ namespace ChillX.Serialization.Test
             buffer = ChillXSerializer<ChillXEntity.TestClassVariantA>.Read(TestClassOne);
             if (EnableRoundTripProcessWithQueue)
             {
+                List<Thread> ProducerThreads = new List<Thread>();
+                List<Thread> ConsumerThreads = new List<Thread>();
                 for (int I = 0; I < 3; I++)
                 {
                     int numThreads = 1;
@@ -1486,6 +1494,7 @@ namespace ChillX.Serialization.Test
                         case 1: numThreads = numThreadsB; break;
                         case 2: numThreads = numThreadsC; break;
                     }
+                    numRepititions = numReps / numThreads;
                     ElapsedTicks = long.MaxValue;
                     ElapsedTicksList.Clear();
                     for (int bestOf = 0; bestOf < numBestOf; bestOf++)
@@ -1496,7 +1505,7 @@ namespace ChillX.Serialization.Test
                         Queue_RentedBuffer.Clear();
                         BenchWaitHandle.Reset();
                         ThreadRun();
-                        for (int N = 0; N < numReps; N++)
+                        for (int N = 0; N < numThreads; N++)
                         {
                             Queue_ChillX.Enqueue(TestClassOne);
                         }
@@ -1504,10 +1513,10 @@ namespace ChillX.Serialization.Test
                         {
                             Thread T;
                             T = new Thread(new ThreadStart(ChillXSerializerBench_Read));
-                            runningTHreadList.Add(T);
+                            ProducerThreads.Add(T);
                             T.Start();
                             T = new Thread(new ThreadStart(ChillXSerializerBench_Write));
-                            runningTHreadList.Add(T);
+                            ConsumerThreads.Add(T);
                             T.Start();
                         }
                         GC.Collect();
@@ -1515,19 +1524,17 @@ namespace ChillX.Serialization.Test
                         sw.Restart();
                         BenchWaitHandle.Set();
                         bool BenchRunning = true;
-                        while (BenchRunning)
+                        foreach (Thread T in ProducerThreads)
                         {
-                            Thread.Sleep(1);
-                            BenchRunning = Queue_ChillX.HasItems();
+                            T.Join();
                         }
-                        BenchRunning = true;
                         while (BenchRunning)
                         {
                             Thread.Sleep(1);
                             BenchRunning = Queue_RentedBuffer.HasItems();
                         }
                         ThreadExit();
-                        foreach (Thread T in runningTHreadList)
+                        foreach (Thread T in ConsumerThreads)
                         {
                             T.Join();
                         }
@@ -1680,22 +1687,30 @@ namespace ChillX.Serialization.Test
         {
             byte[] buffer;
             MessagePackEntity.TestClassVariantA TestClassOne;
+            TestClassOne = Queue_MsgPack.DeQueue();
             BenchWaitHandle.WaitOne();
-            while (ThreadsIsRunning)
+            for (int I = 0; I < numRepititions / 1000; I++)
             {
-                TestClassOne = Queue_MsgPack.DeQueue();
-                if (TestClassOne != null)
+                for (int N = 0; N < 1000; N++)
                 {
-                    buffer = MessagePack.MessagePackSerializer.Serialize<MessagePackEntity.TestClassVariantA>(TestClassOne);
-                    //Queue_Buffer.Enqueue(buffer);
+                    if (TestClassOne != null)
+                    {
+                        buffer = MessagePack.MessagePackSerializer.Serialize<MessagePackEntity.TestClassVariantA>(TestClassOne.Clone());
+                        Queue_Buffer.Enqueue(buffer);
+                    }
+                }
+                while (Queue_Buffer.Count > 5000)
+                {
+                    Thread.Sleep(0);
                 }
             }
+
         }
         private static void MessagePackBenchmark_Write()
         {
             byte[] buffer;
             int bytesConsumed;
-            MessagePackEntity.TestClassVariantA TestClassTwo;
+            MessagePackEntity.TestClassVariantA TestClassTwo = null;
             BenchWaitHandle.WaitOne();
             while (ThreadsIsRunning) // Might miss a couple (< numthreads) but close enough
             {
@@ -1706,6 +1721,8 @@ namespace ChillX.Serialization.Test
                     TestClassTwo = MessagePack.MessagePackSerializer.Deserialize<MessagePackEntity.TestClassVariantA>(buffer);
                 }
             }
+            MessagePackEntity.TestClassVariantA TestClassThree;
+            TestClassThree = TestClassTwo;
         }
 
         private static void MessagePackPerformanceTest(int numReps, int stringSize, int numThreadsA, int numThreadsB, int numThreadsC, int numBestOf)
@@ -1866,6 +1883,9 @@ namespace ChillX.Serialization.Test
 
             for (int I = 0; I < 3; I++)
             {
+                List<Thread> ProducerThreads = new List<Thread>();
+                List<Thread> ConsumerThreads = new List<Thread>();
+
                 int numThreads = 1;
                 switch (I)
                 {
@@ -1873,6 +1893,8 @@ namespace ChillX.Serialization.Test
                     case 1: numThreads = numThreadsB; break;
                     case 2: numThreads = numThreadsC; break;
                 }
+                numRepititions = numReps / numThreads;
+
                 ElapsedTicks = long.MaxValue;
                 ElapsedTicksList.Clear();
                 for (int bestOf = 0; bestOf < numBestOf; bestOf++)
@@ -1883,33 +1905,36 @@ namespace ChillX.Serialization.Test
                     Queue_Buffer.Clear();
                     BenchWaitHandle.Reset();
                     ThreadRun();
-                    for (int N = 0; N < numReps; N++)
+                    for (int N = 0; N < numThreads; N++)
                     {
-                        Queue_MsgPack.Enqueue(TestClassOne.Clone());
+                        Queue_MsgPack.Enqueue(TestClassOne);
                     }
                     for (int N = 0; N < numThreads; N++)
                     {
                         Thread T;
                         T = new Thread(new ThreadStart(MessagePackBenchmark_Read));
-                        runningTHreadList.Add(T);
+                        ProducerThreads.Add(T);
                         T.Start();
                         T = new Thread(new ThreadStart(MessagePackBenchmark_Write));
-                        runningTHreadList.Add(T);
+                        ConsumerThreads.Add(T);
                         T.Start();
                     }
                     sw.Restart();
                     BenchWaitHandle.Set();
                     bool BenchRunning = true;
-                    while (BenchRunning)
+                    foreach (Thread t in ProducerThreads)
                     {
-                        Thread.Sleep(1);
-                        BenchRunning = Queue_MsgPack.HasItems();
+                        t.Join();
                     }
-                    BenchRunning = true;
                     while (BenchRunning)
                     {
                         Thread.Sleep(1);
                         BenchRunning = Queue_Buffer.HasItems();
+                    }
+                    ThreadExit();
+                    foreach (Thread t in ConsumerThreads)
+                    {
+                        t.Join();
                     }
                     sw.Stop();
                     if (sw.ElapsedTicks < ElapsedTicks)
@@ -1917,7 +1942,6 @@ namespace ChillX.Serialization.Test
                         ElapsedTicks = sw.ElapsedTicks;
                     }
                     ElapsedTicksList.Add(sw.ElapsedTicks);
-                    ThreadExit();
                     BenchRunning = true;
                     while (BenchRunning)
                     {

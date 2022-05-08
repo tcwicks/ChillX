@@ -33,6 +33,25 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+    /*
+
+    BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19044.1645 (21H2)
+    AMD Ryzen Threadripper 3970X, 1 CPU, 64 logical and 32 physical cores
+    .NET SDK=6.0.202
+      [Host]   : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT  [AttachedDebugger]
+      .NET 6.0 : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT
+
+    Job=.NET 6.0  Runtime=.NET 6.0
+
+    |                Method | numRepititions |            TestType | numThreads | stringSize |     Mean |   Error |  StdDev |       Gen 0 | Completed Work Items | Lock Contentions | Allocated |
+    |---------------------- |--------------- |-------------------- |----------- |----------- |---------:|--------:|--------:|------------:|---------------------:|-----------------:|----------:|
+    | BenchSerialize_String |       10000000 |       UTF8.GetBytes |          1 |         64 | 497.9 ms | 5.04 ms | 4.72 ms | 105000.0000 |                    - |                - |    839 MB |
+    | BenchSerialize_String |       10000000 | StringToByteViaChar |          1 |         64 | 445.5 ms | 3.81 ms | 3.18 ms | 181000.0000 |                    - |                - |  1,450 MB |
+    | BenchSerialize_String |       10000000 |      UTF8.GetString |          1 |         64 | 349.2 ms | 5.15 ms | 5.28 ms | 286000.0000 |                    - |                - |  2,289 MB |
+    | BenchSerialize_String |       10000000 | ByteToStringViaChar |          1 |         64 | 505.1 ms | 1.82 ms | 1.52 ms | 363000.0000 |                    - |                - |  2,899 MB |
+
+    */
+
 namespace ChillX.Serialization.Benchmark.ChillXEntity
 {
     //[SimpleJob(RuntimeMoniker.NetCoreApp20), SimpleJob(RuntimeMoniker.NetCoreApp31), SimpleJob(RuntimeMoniker.Net60), SimpleJob(RuntimeMoniker.Net50), SimpleJob(RuntimeMoniker.Net471), SimpleJob(RuntimeMoniker.Net48)]
@@ -42,6 +61,7 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
     [SimpleJob(RuntimeMoniker.Net60)]
     public class Bench_ChillXSerializePrimitives : BenchBase
     {
+
         [Params(10000000)]
         public int numRepititions;
 
@@ -159,13 +179,11 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
         private void Test_StringToByteViaChar()
         {
             byte[] buffer;
-            char[] charArray = TestString.ToCharArray();
-            int numBytes = charArray.Length * 2;
+            int numBytes = TestString.ToCharArray().Length * 2;
             buffer = new byte[numBytes];
             for (int I = 0; I < numReps; I++)
             {
-                charArray = TestString.ToCharArray();
-                numBytes = BitConverterExtended.GetBytes(charArray, buffer, 0);
+                numBytes = BitConverterExtended.GetBytes(TestString.ToCharArray(), buffer, 0);
             }
             buffer= new byte[numBytes];
         }
@@ -198,8 +216,7 @@ namespace ChillX.Serialization.Benchmark.ChillXEntity
             numBytes = BitConverterExtended.GetBytes(charArray, buffer, 0);
             for (int I = 0; I < numReps; I++)
             {
-                charArray = BitConverterExtended.ToCharArray(buffer, 0, numBytes);
-                Deserialized = new string(charArray);
+                Deserialized = new string(BitConverterExtended.ToCharArray(buffer, 0, numBytes));
             }
             numBytes = Deserialized.Length * 2;
             buffer = new byte[numBytes];

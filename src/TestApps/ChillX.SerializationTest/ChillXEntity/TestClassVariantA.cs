@@ -319,6 +319,7 @@ namespace ChillX.Serialization.Test.ChillXEntity
             result.ArrayProperty_Long = result.ArrayProperty_Long ?? RentedBuffer<long>.Shared.Rent(ArrayProperty_Long.Length);
             result.ArrayProperty_Long += ArrayProperty_Long;
 
+
             result.ArrayProperty_UShort = result.ArrayProperty_UShort ?? RentedBuffer<ushort>.Shared.Rent(ArrayProperty_UShort.Length);
             result.ArrayProperty_UShort += ArrayProperty_UShort;
 
