@@ -6,7 +6,6 @@ using System.Threading;
 namespace ChillX.Core.Structures
 {
     public class LockFreeRingBufferQueue<T>
-        where T : IEquatable<T>
     {
         private class BufferNode
         {
@@ -173,10 +172,6 @@ namespace ChillX.Core.Structures
                 Result = current.Buffer[nextIndex];
                 //Thread.MemoryBarrier();
                 //current.Buffer[nextIndex] = default(T);
-                if (Result.Equals(0))
-                {
-
-                }
                 success = true;
                 return Result;
             }
@@ -187,8 +182,6 @@ namespace ChillX.Core.Structures
                 {
                     if (current.ID != Tail.ID)
                     {
-                        // Do Nothing
-                        //nextIndex = Interlocked.Decrement(ref current.Tail);
                         return Result;
                     }
                     else if (Tail.Next != null)
@@ -201,23 +194,17 @@ namespace ChillX.Core.Structures
                             Result = newTail.Buffer[newTail.Tail];
                             //Thread.MemoryBarrier();
                             //newTail.Buffer[newTail.Tail] = default(T);
-                            if (Result.Equals(0))
-                            {
-
-                            }
                             success = true;
                             Tail = newTail;
                         }
                         else
                         {
                             //Do Nothing
-                            //nextIndex = Interlocked.Decrement(ref current.Tail);
                         }
                     }
                     else
                     {
                         //Do Nothing
-                        //nextIndex = Interlocked.Decrement(ref current.Tail);
                     }
                 }
                 finally

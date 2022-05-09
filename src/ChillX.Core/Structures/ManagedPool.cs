@@ -112,31 +112,31 @@ namespace ChillX.Core.Structures
             {
                 result.OnRented(capacity);
                 Interlocked.Increment(ref m_RentedCount);
-                //Todo: Remove Debug Code
-                if (Common.EnableDebug)
-                {
-                    RentedBuffer<char> DebugOne;
-                    DebugOne = result as RentedBuffer<char>;
-                    if (DebugOne != null)
-                    {
-                        DebugOne.DebugText.Add(@"Rented: From Cache.");
-                    }
-                }
+                ////Todo: Remove Debug Code
+                //if (Common.EnableDebug)
+                //{
+                //    RentedBuffer<char> DebugOne;
+                //    DebugOne = result as RentedBuffer<char>;
+                //    if (DebugOne != null)
+                //    {
+                //        DebugOne.DebugText.Add(@"Rented: From Cache.");
+                //    }
+                //}
                 return result;
             }
             result = new T();
             result.OnRented(capacity);
             Interlocked.Increment(ref m_RentedCount);
             //Todo: Remove Debug Code
-            if (Common.EnableDebug)
-            {
-                RentedBuffer<char> DebugTwo;
-                DebugTwo = result as RentedBuffer<char>;
-                if (DebugTwo != null)
-                {
-                    DebugTwo.DebugText.Add(@"Rented: New.");
-                }
-            }
+            //if (Common.EnableDebug)
+            //{
+            //    RentedBuffer<char> DebugTwo;
+            //    DebugTwo = result as RentedBuffer<char>;
+            //    if (DebugTwo != null)
+            //    {
+            //        DebugTwo.DebugText.Add(@"Rented: New.");
+            //    }
+            //}
 
             //if ((TrimPoolStopWatch.ElapsedMilliseconds > 60000) || (Interlocked.Decrement(ref TrimPoolCountDown) < 0))
             //{
@@ -166,29 +166,30 @@ namespace ChillX.Core.Structures
 
         public void Return(T item)
         {
-            if (Common.EnableDebug)
-            {
-                RentedBuffer<char> DebugOne;
-                DebugOne = item as RentedBuffer<char>;
-                if (DebugOne != null)
-                {
-                    if (DebugOne.IsRented)
-                    {
-                        if (DebugOne._rawBufferInternal != null)
-                        {
-                            DebugOne.DebugText.Add(String.Concat(@"Returned: ", new String(DebugOne.BufferSpan.ToArray())));
-                        }
-                        else
-                        {
-                            DebugOne.DebugText.Add(@"_rawBufferInternal is Null !!!!!");
-                        }
-                    }
-                    else
-                    {
-                        DebugOne.DebugText.Add(@"Duplicate Return!!!!!");
-                    }
-                }
-            }
+            //Todo: Remove Debug Code
+            //if (Common.EnableDebug)
+            //{
+            //    RentedBuffer<char> DebugOne;
+            //    DebugOne = item as RentedBuffer<char>;
+            //    if (DebugOne != null)
+            //    {
+            //        if (DebugOne.IsRented)
+            //        {
+            //            if (DebugOne._rawBufferInternal != null)
+            //            {
+            //                DebugOne.DebugText.Add(String.Concat(@"Returned: ", new String(DebugOne.BufferSpan.ToArray())));
+            //            }
+            //            else
+            //            {
+            //                DebugOne.DebugText.Add(@"_rawBufferInternal is Null !!!!!");
+            //            }
+            //        }
+            //        else
+            //        {
+            //            DebugOne.DebugText.Add(@"Duplicate Return!!!!!");
+            //        }
+            //    }
+            //}
             if (item.IsRented)
             {
                 Interlocked.Decrement(ref m_RentedCount);

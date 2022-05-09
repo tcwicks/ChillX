@@ -40,15 +40,15 @@ namespace ChillX.Core.Structures
         public static readonly ManagedPool<RentedBuffer<T>> Shared = ManagedPool<RentedBuffer<T>>.Shared;
 
         //Todo: Remove this
-        public List<string> DebugText { get; } = DebugText_Create();
-        private static List<string> DebugText_Create()
-        {
-            if (Common.EnableDebug)
-            {
-                return new List<string>();
-            }
-            return null;
-        }
+        //public List<string> DebugText { get; } = DebugText_Create();
+        //private static List<string> DebugText_Create()
+        //{
+        //    if (Common.EnableDebug)
+        //    {
+        //        return new List<string>();
+        //    }
+        //    return null;
+        //}
 
         /// <summary>
         /// Constructor is used internaly by the framework. Instead use <see cref="Shared"/>
@@ -87,6 +87,8 @@ namespace ChillX.Core.Structures
             get { return _rawBufferInternal.AsSpan(0, Length)[index]; }
             set { _rawBufferInternal.AsSpan(0, Length)[index] = value; }
         }
+
+        public int? OwnerID { get; set; }
 
         private bool m_isDisposed = false;
         public void Dispose()
@@ -153,6 +155,7 @@ namespace ChillX.Core.Structures
                     if (IsRented)
                     {
                         Shared.Return(this);
+                        OwnerID = null;
                         //if (buffer != null)
                         //{
                         //    ArrayPool<T>.Shared.Return(buffer);
