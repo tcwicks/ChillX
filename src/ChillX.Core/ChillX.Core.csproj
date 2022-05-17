@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Remove="CapabilityInterfaces\ISupportClone.cs" />
+    <Compile Remove="Structures\LockFreeQueue.cs" />
   </ItemGroup>
 
   <ItemGroup>

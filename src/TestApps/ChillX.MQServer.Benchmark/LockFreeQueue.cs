@@ -9,12 +9,13 @@
 // 2) ChillX.Core.Structures.ThreadSafeQueue<T> which uses a ReaderWriterLockSlim outperforms this by 85%
 
 using ChillX.Core.CapabilityBase;
+using ChillX.Core.Structures;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace ChillX.Core.Structures
+namespace ChillX.MQServer.Benchmark
 {
     /// <summary>
     /// <see cref="ThreadSafeQueue{T}"/> is much faster and creates lower GC pressure than this implementation
@@ -24,7 +25,7 @@ namespace ChillX.Core.Structures
     /// <typeparam name="T">Work item type which you would be scheduling for processing</typeparam>
     public class LockFreeQueue<T>
     {
-        
+
 
         private static bool CompareExchange(ref LockFreeQueueNode<T> location, LockFreeQueueNode<T> newNode, LockFreeQueueNode<T> originalNode)
         {
@@ -177,6 +178,5 @@ namespace ChillX.Core.Structures
         }
 
     }
-
 
 }
