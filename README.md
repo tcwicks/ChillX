@@ -35,7 +35,7 @@ A Message queue plus serializer are simply two of the building  blocks for a Ser
 - Minimizing GC overheads
 - etc...
 
-As a matter of fact ZeroMQ (Router Dealer pattern) plus MessagePackSharp used to be my goto frameworks for implementing Services / Micro Services ranging from ETL to Machine Learning model processors (Tensorflow.Net / TorchSharp) to various other transaction processing backends. Unfortunately however each time I end up having to re-implement a significant amount of plumbing. Hence I decided to put this framework together combining the best features from each implementation.
+As a matter of fact ZeroMQ (Router Dealer pattern) plus MessagePackSharp used to be my goto frameworks for implementing Services / Micro Services ranging from ETL to Machine Learning model processors (Tensorflow.Net / TorchSharp) to various other transaction processing backends. Unfortunately however each time I end up having to re-implement a significant amount of plumbing. Hence I decided to put this framework together combining the best features from each implementation plus adding a custom serializer and message queue.
 
 ### Custom serializer:
 
