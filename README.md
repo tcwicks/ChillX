@@ -1,5 +1,6 @@
 
 
+
 # ChillX
 
 ChillX is currently a work in progress for creating a Micro Services host with builtin Message Queue, Message Routing, Serialization, Transport and Multi-Threaded Load Management in Dot Net.
@@ -21,8 +22,9 @@ Please note this is a work in progress.
 - Multi Threaded Unit of Work: [ChillX.Threading Description](https://github.com/tcwicks/ChillX/blob/master/docs/ChillXThreading.md "ChillX.Threading Description") - [Source Code](https://github.com/tcwicks/ChillX/tree/master/src/ChillX.Threading "Source Code")
 
 ### In Progress:
-- Common functionality: [Source Code](https://github.com/tcwicks/ChillX/tree/master/src/ChillX.Core "Source Code")
-- Microservices Host with built in reliable Message Queue and point to multi point message routing
+- Common functionality: [ChillX.Core Source Code](https://github.com/tcwicks/ChillX/tree/master/src/ChillX.Core "ChillX.Core Source Code")
+- Message Queue: [ChillX.MQServer Source Code](https://github.com/tcwicks/ChillX/tree/master/src/ChillX.MQServer "ChillX.MQServer Source Code")
+- Microservices Host
 
 ## Motivation
 So why do we need this when we already have message queue frameworks such as ZeroMQ, FastMQ, RabbitMQ and serializers such as MessagePackSharp ?
