@@ -38,7 +38,7 @@ As a matter of fact ZeroMQ plus MessagePackSharp used to be my goto frameworks f
 
 ### Custom serializer:
 
-Another significant challenge is GC overheads. The standard implementation of BitConverter creates a ridiculous amount of garbage from intermediaries. When aiming for high throughput what we end up with instead is 80% time spent in GC which is quite counter productive. This is the motivation behind ChillX.Serializer which uses a pool of managed buffers of primitive types.
+Another significant challenge is GC overheads. The standard implementation of BitConverter creates a ridiculous amount of garbage from intermediaries. When aiming for high throughput what we end up with instead is 80% time spent in GC which is quite counter productive. Resolving this issue is the motivation behind ChillX.Serializer which uses a pool of managed buffers of primitive types instead of temporary intermediaries. Additionally it includes a rewrite of BitConverter with significant added functionality. Serialization of type <T> itself is implemented using cached reflection and expression trees.
 
 ### Managed multi threading:
 
