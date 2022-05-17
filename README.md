@@ -1,185 +1,70 @@
 
+
 # ChillX
 
-ChillX is a collection of libraries encapsulating common functionality.
-Currently two libraries and tests for each are implemented:
+ChillX is currently a work in progress for creating a Micro Services host with builtin Message Queue, Serialization and Transport in Dot Net.
 Libraries are Dot Net Standard 2.0 so its usable in both Dot Net Framework and Dot Net Core
 
-- ChillXThreading - Light Weight Multi-Threaded Atomic Unit of Work Processor
-- ChillXLogging - Light Weight Offloaded (to separate thread) Asyncronous Logging Framework with automatic capture of unhandled exceptions
+## Overall objectives / goals:
+- Performance as a feature
+- Seamless horizontal (load) and vertical (functionality) scalability of hosted micro services
+- Independent of IIS. Microservices could be published / consumed using its built in Message Queue or IIS or Kestrel or custom gateway or a multi user winforms app etc...
+- Atomic request / transaction processing
 
-# ChillXThreading
-This library is a managed Atomic Unit Of Work processor with an auto scaling thread pool designed to support discrete unit of work processor such as API end points. Additionally it implements basic per client concurrent request limits.
-Example Use Case:
-Implementing API end points in IIS as Web API, MVC etc... is relatively straight forward.
-However managing concurrency and backend load etc... are not always as straight forward. While adding a Message Queue is one way of solving this it is also a pretty heavy weight approach to solving this issue.
+## Implementation roadmap:
+Please note this is a work in progress.
 
-### Caters for the following requirements:
+### Complete:
+- Application Logging Framework: [ChillX.Logging Description](https://github.com/tcwicks/ChillX/blob/master/docs/ChillXLogging.md "ChillX.Logging Description") - [Source Code](https://github.com/tcwicks/ChillX/tree/master/src/ChillX.Logging "Source Code")
+- Serialization: ChillX.Serialization description coming soon - [Source Code](https://github.com/tcwicks/ChillX/tree/master/src/ChillX.Serialization "Source Code")
+- Multi Threaded Unit of Work: [ChillX.Threading Description](https://github.com/tcwicks/ChillX/blob/master/docs/ChillXThreading.md "ChillX.Threading Description") - [Source Code](https://github.com/tcwicks/ChillX/tree/master/src/ChillX.Threading "Source Code")
 
- - Offloading requests from the web server thread with an Async Await of the processed response
- - Throttling the number of concurrent backend API calls for processing requests
- - Throttling the number of concurrent API calls per client
- - Completes processing of any pending request work items in case of Process Shutdown
- - In the case of Application Pool Recycle completes processing of as many pending request work items until terminated by IIS (Available time window depends on timeout settings in IIS)
- - Gracefull shutdown when Application Pool recycles or when process exists.
+### In Progress:
+- Common functionality: [Source Code](https://github.com/tcwicks/ChillX/tree/master/src/ChillX.Core "Source Code")
+- Microservices Host with built in reliable Message Queue and point to multi point message routing
 
-### Key features
- - Built for pure performance.
- - Extremely lightweight
+## Motivation
+So why do we need this when we already have message queue frameworks such as ZeroMQ, FastMQ, RabbitMQ and serializers such as MessagePackSharp ?
 
-### Example Usage
+A Message queue plus serializer are simply two of the building  blocks for a Service / Microservices host. It is does not include any of the plumbing work required for:
 
-    //Example Usage for WebAPI controller
-   public enum WorkItemPriority
-    {
-        Low = 0,
-        Medium = 1,
-        High = 2,
-    }
-    
-    private static ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority> ThreadedProcessorExample = new ThreadedWorkItemProcessor<DummyRequest, DummyResponse, int, WorkItemPriority>(
-            _maxWorkItemLimitPerClient: 100 // Maximum number of concurrent requests in the processing queue per client. Set to int.MaxValue to disable concurrent request caps
-            , _maxWorkerThreads: 16 // Maximum number of threads to scale upto
-            , _threadStartupPerWorkItems: 4 // Consider starting a new processing thread ever X requests
-            , _threadStartupMinQueueSize: 4 // Do NOT start a new processing thread if work item queue is below this size
-            , _idleWorkerThreadExitSeconds: 10 // Idle threads will exit after X seconds
-            , _abandonedResponseExpirySeconds: 60 // Expire processed work items after X seconds (Maybe the client terminated or the web request thread died)
-            , _processRequestMethod: ProcessRequestMethod // Your Do Work method for processing the request
-            , _logErrorMethod: Handler_LogError
-            , _logMessageMethod: Handler_LogMessage
-            );
-    //[FromBody]
-    public async Task<DummyResponse> GetResponse([FromBody] DummyRequest _request)
-    {
-        int clientID = 1; //Replace with the client ID from your authentication mechanism if using per client request caps. Otherwise just hardcode to maybe 0 or whatever
-        WorkItemPriority _priority;
-        _priority = WorkItemPriority.Medium; //Assign the priority based on whatever prioritization rules.
-        int RequestID = ThreadedProcessorExample.ScheduleWorkItem(_priority, _request, clientID);
-        if (RequestID < 0)
-        {
-            //Client has exceeded maximum number of concurrent requests or Application Pool is shutting down
-            //return a suitable error message here
-            return new DummyResponse() { ErrorMessage = @"Maximum number of concurrent requests exceeded or service is restarting. Please retry request later." };
-        }
+- Reliable request processing
+- Message routing
+- Load management
+- Minimizing GC overheads
+- etc...
 
-        //If you need the result (Like in a webapi controller) then do this
-        //Otherwise if it is say a backend processing sink where there is no client waiting for a response then we are done here. just return.
+As a matter of fact ZeroMQ plus MessagePackSharp used to be my goto frameworks for implementing Services / Micro Services ranging from ETL to Machine Learning model processors (Tensorflow.Net / TorchSharp) to various other transaction processing backends. Unfortunately however each time I end up having to re-implement a significant amount of plumbing. Hence I decided to put this framework together combining the best features from each implementation.
 
-        KeyValuePair<bool, ThreadWorkItem<DummyRequest, DummyResponse, int>> workItemResult;
+### Custom serializer:
 
-        workItemResult = await ThreadedProcessorExample.TryGetProcessedWorkItemAsync(RequestID,
-            _timeoutMS: 1000, //Timeout of 1 second
-            _taskWaitType: ThreadProcessorAsyncTaskWaitType.Delay_Specific,
-            _delayMS: 10);
-        if (!workItemResult.Key)
-        {
-            //Processing timeout or Application Pool is shutting down
-            //return a suitable error message here
-            return new DummyResponse() { ErrorMessage = @"Internal system timeout or service is restarting. Please retry request later." };
-        }
-        return workItemResult.Value.Response;
-    }
+Another significant challenge is GC overheads. The standard implementation of BitConverter creates a ridiculous amount of garbage from intermediaries. When aiming for high throughput what we end up with instead is 80% time spent in GC which is quite counter productive. This is the motivation behind ChillX.Serializer which uses a pool of managed buffers of primitive types.
 
-    public static DummyResponse ProcessRequestMethod(DummyRequest request)
-    {
-        // Process the request and return the response
-        return new DummyResponse() { orderID = request.orderID };
-    }
-    public static void Handler_LogError(Exception ex)
-    {
-        //Log unhandled exception here
-    }
+### Managed multi threading:
 
-    public static void Handler_LogMessage(string Message)
-    {
-        //Log message here
-    }
+So why do we need a wrapper around the background threadpool? 
+When implementing an API gateway the most straight forward and often used pattern is to spin up an WebAPI service with NewtonSoft JSON as a wrapper around the backend processing services and simply offload to the background thread pool using the Async keyword. Async / Task.Run  is both a curse and a blessing as it allows us to blindly fire and forget into the background threadpool. However there is one fundamental flaw in doing this. The backround threadpool scales much faster than the load handling capacity of the backend systems.
+Consider the following scenario:
+Imagine that we have a pricing and stock availability ecommerce API service where the requests are processed by an ERP system (SAP, Oracle, etc...)
+The load (number of concurrent requests) generated is outside our control and is dependent on user / customer behavior. In real world usage this load is most likely going to have significant bursts / peaks which are probably an order of magnitude greater than the average load. What would happen if we suddenly receive 100 concurrent requests when the average load is say 10 concurrent requests? The ERP grinds to a halt, requests timeout, users trying to perform other tasks in the ERP might get timed out / kicked out, etc... With complex backend processing applications such as an ERP (or even just a DB server such as SQL server), when load exceeds capacity, performance degrades exponentially. 
+As a simplified example: 
+- If capacity is 10 requests per second.
+- If average load is 5 requests per second. 
 
+if we get a peak of 100 concurrent requests it will take a lot longer than 10 seconds to process these. Performance is most likely going to degrade to well below 50% of capacity. If the average load of 5 requests per second continues the system will not be able to recover. Sure the WebAPI requests will timeout however not before adding their requests to the pending queue in the ERP. The end result for the ERP or other backend processing application is a death spiral and crash.
 
-### Performance stats
+### Offloaded logging
 
-#### CPU Bound Test: Tightly coupled rapid processing workloads test
+Application logging is essential however this should never be at the expense of performance. Consider a scenario where API requests are being logged to a database. If this is done synchronously then:
+- At best we are reducing performance by adding the logging round trip time on top of the actual request processing time.
+- At worst we are creating a performance bottleneck and limiting throughput
 
-    Baseline Fixed Overhead: 1000 Calls : 00:00:00.0003302
-    Baseline Processing Overhead At 1ms Per Unit Of Work: 1000 Calls : 00:00:15.7817660
-    (0ms Per Unit Of Work) - 1000 Calls From 1 Sync Client: 00:00:00.0168385
-    (0ms Per Unit Of Work) - 1000 Calls From 1 Async Client: 00:00:00.0767332
-    (0ms Per Unit Of Work) - 10,000 Calls Across 10 Sync Clients: 00:00:00.1360409
-    (0ms Per Unit Of Work) - 10,000 Calls Across 10 Async Clients: 00:00:01.3950883
-    (0ms Per Unit Of Work) - 32,000 Calls Across 32 Sync Clients: 00:00:00.3184329
-    (0ms Per Unit Of Work) - 32,000 Calls Across 32 Async Clients: 00:00:07.3446691
-    (0ms Per Unit Of Work) - 128,000 Calls Across 128 Sync Clients: 00:00:01.8473372
-    (0ms Per Unit Of Work) - 128,000 Calls Across 128 Async Clients: 00:00:38.1362445
+What if there were multiple log entries written to the database per API request... The load vs capacity problem now compounds.
+What if the logging database is hosted on the same database server as the application as well. The load vs capacity problem now compounds further.
 
-#### CPU Bound Test: Using Spinwait of 1 ms for simulating unit of work processing
+Log entries could be bulk written do a database using BCP. How would this be done of the log entries are being written synchronously one at a time?
 
-    Note: Using task.Delay(1) in the Async client (Task is forced to use Async with a 1 ms wait)
-    Baseline Fixed Overhead: 1000 Calls : 00:00:00.0003945
-    Baseline Processing Overhead At 1ms Per Unit Of Work: 1000 Calls : 00:00:15.7578766
-    (1ms Per Unit Of Work) - 1000 Calls From 1 Sync Client: 00:00:15.7367911
-    (1ms Per Unit Of Work) - 1000 Calls From 1 Async Client: 00:00:16.3562684
-    (1ms Per Unit Of Work) - 10,000 Calls Across 10 Sync Clients: 00:00:17.1059828
-    (1ms Per Unit Of Work) - 10,000 Calls Across 10 Async Clients: 00:00:19.0927514
-    (1ms Per Unit Of Work) - 32,000 Calls Across 32 Sync Clients: 00:00:30.6154786
-    (1ms Per Unit Of Work) - 32,000 Calls Across 32 Async Clients: 00:00:21.4271592
-    (1ms Per Unit Of Work) - 128,000 Calls Across 128 Sync Clients: 00:02:03.2134529
-    (1ms Per Unit Of Work) - 128,000 Calls Across 128 Async Clients: 00:01:06.1646710
+ChillX.Logging is implemented as a log entry queue which adds each entry to a pending queue and returns immediately. Log entries themselves are committed to durable storage such as a DB server by a separate thread. 
 
-#### IO Wait Bound Test: Using Thread.Sleep of 1 ms for simulating unit of work processing
-
-    Baseline Fixed Overhead: 1000 Calls : 00:00:00.0028940
-    Baseline Processing Overhead At 1ms Per Unit Of Work: 1000 Calls : 00:00:15.7583522
-    (1ms Per Unit Of Work) - 1000 Calls From 1 Sync Client: 00:00:15.7395597
-    (1ms Per Unit Of Work) - 1000 Calls From 1 Async Client: 00:00:16.0310528
-    (1ms Per Unit Of Work) - 10,000 Calls Across 10 Sync Clients: 00:00:25.3664534
-    (1ms Per Unit Of Work) - 10,000 Calls Across 10 Async Clients: 00:00:18.5945677
-    (1ms Per Unit Of Work) - 32,000 Calls Across 32 Sync Clients: 00:00:30.6395311
-    (1ms Per Unit Of Work) - 32,000 Calls Across 32 Async Clients: 00:00:26.2611328
-    (1ms Per Unit Of Work) - 128,000 Calls Across 128 Sync Clients: 00:02:03.2886179
-    (1ms Per Unit Of Work) - 128,000 Calls Across 128 Async Clients: 00:01:24.0135682
-
-
-# ChillXLogging
-When engineering for performance the last thing we want to do is to tie up application threads in writing log entries. Additionally in the case of concurrent log writes to the same device be it file system or database this can result in lock contentions adding further latency to the application threads.
-
-This library is a light weight, extremely fast logging framework which offloads the actual logging from the application thread to a separate dedicated logging thread. In addition it automatically captures any unhandled exceptions within the process space. calls to the Log method captures the log entry to a queue and immediately returns. The actual log entry is written by a separate dedicated thread via a configurable number of log writers. The library comes with a file system log writer. Adding log writers is trivial. 
-
-### Key Features
-
- - Lightweight and therefore extremely fast
- - Disconnects the process of submitting a log entry and committing the log entry to storage
- - Convenience extension methods
- - Commits pending log entries in case of Process Shutdown
- - In the case of Application Pool Recycle commits as many pending log entries until terminated by IIS (Available time window depends on timeout settings in IIS)
- - Gracefull shutdown when Application Pool recycles or when process exists.
-
-### Example Usage
-
-    ChillXLogging.Handlers.LogHandlerFile FileLogHandler_RolloverByCount;
-    FileLogHandler_RolloverByCount = new ChillXLogging.Handlers.LogHandlerFile(@"C:\Temp\LogTestByCount",
-        _fileNamePrepend: @"ByCount_", _fileExtension: @".txt", _fileRollOverPerEntries: 10000, _fileRollOverDays: 99, _fileRollOverHours: 1, _fileRollOverMinutes: 1);
-
-    ChillXLogging.Handlers.LogHandlerFile FileLogHandler_RolloverByTime;
-    FileLogHandler_RolloverByTime = new ChillXLogging.Handlers.LogHandlerFile(@"C:\Temp\LogTestByTime",
-        _fileNamePrepend: @"ByCount_", _fileExtension: @".txt", _fileRollOverPerEntries: int.MaxValue, _fileRollOverDays: 0, _fileRollOverHours: 0, _fileRollOverMinutes: 1);
-
-    Logger.BatchSize = 100;
-    Logger.RegisterHandler(@"RolloverByCount", FileLogHandler_RolloverByCount);
-    Logger.RegisterHandler(@"RolloverByTime", FileLogHandler_RolloverByTime);
-
-    //Example usage
-    Logger.LogMessage(LogSeverity.info, @"Some message text");
-    Logger.LogMessage(LogSeverity.info, @"Some message text", _ex: new Exception(@""), DateTime.Now);
-    @"This is a log message".Log(LogSeverity.info);
-    LogSeverity.debug.Log(@"This is another log entry");
-    LogSeverity.error.Log(@"Lets log a post dated exception", new Exception(@"Some message here"), DateTime.Now.AddHours(8));
-    try
-    {
-        throw new InvalidOperationException(@"test exception");
-    }
-    catch (Exception ex)
-    {
-        ex.Log(@"This is a test exception", LogSeverity.debug);
-        //Supports chaining
-        throw ex.Log(@"This is a test exception", LogSeverity.debug).MessageException;
-    }
+### Message Queue
+documentation to be continued...
