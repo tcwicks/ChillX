@@ -53,6 +53,8 @@ As a simplified example:
 
 if we get a peak of 100 concurrent requests it will take a lot longer than 10 seconds to process these. Performance is most likely going to degrade to well below 50% of capacity. If the average load of 5 requests per second continues the system will not be able to recover. Sure the WebAPI requests will timeout however not before adding their requests to the pending queue in the ERP. The end result for the ERP or other backend processing application is a death spiral and crash.
 
+Resolving this issue is the motivation behind ChillX.Threading. Two scenarios are covered. Bulk processing and API request response processing. For each scenario two implementations are provided. One which uses "rate controlled" Async tasks and one which uses foreground threads. If unsure use the Async task version as the foreground thread version is only better in scenarios where the load is both predictable and more or less constant.
+
 ### Offloaded logging
 
 Application logging is essential however this should never be at the expense of performance. Consider a scenario where API requests are being logged to a database. If this is done synchronously then:
@@ -64,7 +66,7 @@ What if the logging database is hosted on the same database server as the applic
 
 Log entries could be bulk written do a database using BCP. How would this be done of the log entries are being written synchronously one at a time?
 
-ChillX.Logging is implemented as a log entry queue which adds each entry to a pending queue and returns immediately. Log entries themselves are committed to durable storage such as a DB server by a separate thread. 
+ChillX.Logging is implemented as a log entry queue which adds each entry to a pending queue and returns immediately. Log entries themselves are committed to durable storage such as a DB server by a separate thread. Multiple log writers can be implemented and attached either for different destinations or different types of storage. In the case of a DB logger this can easily use BCP for logging.
 
 ### Message Queue
 documentation to be continued...
