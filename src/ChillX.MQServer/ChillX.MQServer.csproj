@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Threading\AsyncThreadedWorkItemProcessor.cs" />
+    <Compile Remove="Threading\IdentitySequence.cs" />
+    <Compile Remove="Threading\ThreadedWorkItemProcessor.cs" />
+    <Compile Remove="Threading\ThreadWorkItem.cs" />
+    <Compile Remove="Threading\WorkThread.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChillX.Core\ChillX.Core.csproj" />
+    <ProjectReference Include="..\ChillX.Logging\ChillX.Logging.csproj" />
+    <ProjectReference Include="..\ChillX.Serialization\ChillX.Serialization.csproj" />
+    <ProjectReference Include="..\ChillX.Threading\ChillX.Threading.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Threading\" />
+  </ItemGroup>
+
+</Project>
