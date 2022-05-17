@@ -3,7 +3,7 @@
 # ChillX
 
 ChillX is currently a work in progress for creating a Micro Services host with builtin Message Queue, Serialization and Transport in Dot Net.
-Libraries are Dot Net Standard 2.0 so its usable in both Dot Net Framework and Dot Net Core
+Libraries are Dot Net Standard 2.0 so its usable in Dot Net Framework 4.x, Dot Net Core and Dot Net 5.0 / 6.0
 
 ## Overall objectives / goals:
 - Performance as a feature
