@@ -83,8 +83,8 @@ namespace ChillX.MQServer.Benchmark
             ConcurrentQueueTry = 4,
         }
 
-        //[Params(TestMode.RingBufferQueue, TestMode.ThreadSafeQueue, TestMode.ConcurrentQueueCount, TestMode.ConcurrentQueueTry)]
-        [Params(TestMode.RingBufferQueue)]
+        //[Params(TestMode.RingBufferQueue)]
+        [Params(TestMode.RingBufferQueue, TestMode.ThreadSafeQueue, TestMode.ConcurrentQueueCount, TestMode.ConcurrentQueueTry)]
         public TestMode m_TestMode = TestMode.LockFreeQueue;
 
         private static Random rnd = new Random();
