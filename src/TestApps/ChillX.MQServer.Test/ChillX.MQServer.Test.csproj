@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Pipelines" Version="7.0.0-preview.3.22175.4" />
+    <PackageReference Include="System.Text.Encoding.Extensions" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ChillX.Core\ChillX.Core.csproj" />
+    <ProjectReference Include="..\..\ChillX.Logging\ChillX.Logging.csproj" />
+    <ProjectReference Include="..\..\ChillX.MQServer\ChillX.MQServer.csproj" />
+    <ProjectReference Include="..\..\ChillX.Serialization\ChillX.Serialization.csproj" />
+  </ItemGroup>
+
+</Project>

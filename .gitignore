@@ -361,6 +361,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/src/ChillX.MQServer
-/src/TestApps/ChillX.MQServer.Benchmark
-/src/TestApps/ChillX.MQServer.Test

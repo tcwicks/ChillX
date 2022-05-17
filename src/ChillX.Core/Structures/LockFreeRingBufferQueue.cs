@@ -1,10 +1,37 @@
-﻿using System;
+﻿/*
+ChillX Framework Library
+Copyright (C) 2022  Tikiri Chintana Wickramasingha 
+
+Contact Details: (info at chillx dot com)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
 namespace ChillX.Core.Structures
 {
+    /// <summary>
+    /// <see cref="ThreadSafeQueue{T}"/> is much faster and creates lower GC pressure than this implementation
+    /// This implementation is only provided as a reference example to compare the performance of lock free structures versus locking structures
+    /// This LockFreeQueueNode<T> is not used in any way by the framework as it is inferior in every measurable aspect as compared to <see cref="ThreadSafeQueue{T}"/>
+    /// </summary>
+    /// <typeparam name="T">Work item type which you would be scheduling for processing</typeparam>
     public class LockFreeRingBufferQueue<T>
     {
         private class BufferNode
@@ -19,13 +46,24 @@ namespace ChillX.Core.Structures
                 ID = id;
             }
             public T[] Buffer;
-            public volatile int WriterID;
-            public volatile int Head;
-            public volatile int Tail;
+            public int WriterID;
+            public int Head;
+            public int Tail;
             public BufferNode Next;
             private int BufferNodeSize;
             public int ID;
+            public void Clear(int id)
+            {
+                Array.Clear(Buffer,0, Buffer.Length);
+                WriterID = -1;
+                Head = -1;
+                Tail = 0;
+                ID = id;
+            }
         }
+
+        private const byte TrueValue = (byte)1;
+        private const byte FalseValue = (byte)0;
 
         public LockFreeRingBufferQueue(int bufferNodeSize  = 8192)
         {
@@ -34,15 +72,33 @@ namespace ChillX.Core.Structures
                 throw new ArgumentException(@"Capacity must be greater than 2");
             }
             BufferNodeSize = bufferNodeSize;
-            BufferID = new ThreadsafeCounter(0, int.MaxValue - 1);
-            Head = new BufferNode(bufferNodeSize, BufferID.NextID(), true);
+            Head = new BufferNode(bufferNodeSize, BufferIDNext, true);
             Tail = Head;
+            newHead = new BufferNode(BufferNodeSize, BufferIDNext);
+            NewHeadValid = TrueValue;
+            OldTailSlot1 = null;
         }
-        private readonly ThreadsafeCounter BufferID;
+        private int m_BufferID = 0;
+        private int BufferIDNext 
+        {
+            get
+            {
+                m_BufferID++;
+                if (m_BufferID >= int.MaxValue) { m_BufferID = 1; }
+                return m_BufferID;
+            }
+        }
         private BufferNode Head;
         private BufferNode Tail;
         private int BufferNodeSize;
-        private volatile int m_Count;
+        private int m_Count;
+
+        private BufferNode newHead;
+        private byte NewHeadValid;
+
+        private BufferNode OldTailSlot1;
+        private BufferNode OldTailSlot2;
+
         public int Count { get { return m_Count; } }
         private readonly ReaderWriterLockSlim SyncLock = new ReaderWriterLockSlim();
 
@@ -51,7 +107,7 @@ namespace ChillX.Core.Structures
             SyncLock.EnterWriteLock();
             try
             {
-                Head = new BufferNode(BufferNodeSize, BufferID.NextID(), true);
+                Head = new BufferNode(BufferNodeSize, BufferIDNext, true);
                 Tail = Head;
                 Interlocked.Exchange(ref m_Count, 0);
             }
@@ -101,25 +157,63 @@ namespace ChillX.Core.Structures
             }
             else if (nextIndex == BufferNodeSize)
             {
+                #region previous lock based method
+                //This can be done without a lock
                 SyncLock.EnterWriteLock();
                 try
                 {
-                    if (current.ID != Head.ID)
-                    {
-                        throw new Exception(@"Buffer size is smaller than the number of concurrent threads enqueuing");
-                        //return false;
-                    }
-                    BufferNode newHead;
-                    newHead = new BufferNode(BufferNodeSize, BufferID.NextID());
-
+                    //This cannot happen
+                    //if (current.ID != Head.ID)
+                    //{
+                    //    throw new Exception(@"Buffer size is smaller than the number of concurrent threads enqueuing");
+                    //    //return false;
+                    //}
                     Head = newHead;
-                    Interlocked.Exchange(ref Head, newHead);
-                    Interlocked.Exchange(ref current.Next, newHead);
+                    current.Next = newHead;
+                    if (OldTailSlot1 != null)
+                    {
+                        newHead = OldTailSlot1;
+                        OldTailSlot1 = null;
+                    }
+                    else
+                    {
+                        newHead = new BufferNode(BufferNodeSize, BufferIDNext);
+                    }
                 }
                 finally
                 {
                     SyncLock.ExitWriteLock();
                 }
+                #endregion
+
+                #region Lock free method
+                //Lock free method 
+                //BufferNode newHeadTemp = null;
+
+                //while (newHeadTemp == null)
+                //{
+                //    newHeadTemp = Interlocked.Exchange(ref newHead, null);
+                //}
+
+                ////Interlocked is not needed anymore because the final Interlocked.CompareExchange will flush store operations of this thread.
+                ////Interlocked.Exchange(ref Head, newHeadTemp);
+                ////Interlocked.Exchange(ref current.Next, newHeadTemp);
+                //Head = newHeadTemp;
+                //current.Next = newHeadTemp;
+
+                ////newHeadTemp = Interlocked.Exchange(ref OldTailSlot1, null);
+                //newHeadTemp = OldTailSlot1;
+                //OldTailSlot1 = null;
+
+                //if (newHeadTemp == null)
+                //{
+                //    //newHeadTemp = new BufferNode(BufferNodeSize, BufferID.NextID());
+                //    //Interlocked.Exchange(ref newHead, newHeadTemp);
+                //    newHeadTemp = new BufferNode(BufferNodeSize, BufferID.NextID());
+                //}
+                //Interlocked.Exchange(ref newHead, newHeadTemp);
+                #endregion
+
                 while (Interlocked.CompareExchange(ref current.Head, nextIndex, currentIndex) != currentIndex)
                 {
                     //Just Loop
@@ -187,6 +281,7 @@ namespace ChillX.Core.Structures
                     else if (Tail.Next != null)
                     {
                         BufferNode newTail;
+                        BufferNode oldTailTemp = null;
                         newTail = Tail.Next;
                         if (newTail.Tail <= newTail.Head)
                         {
@@ -195,7 +290,19 @@ namespace ChillX.Core.Structures
                             //Thread.MemoryBarrier();
                             //newTail.Buffer[newTail.Tail] = default(T);
                             success = true;
-                            Tail = newTail;
+                            oldTailTemp = Tail;
+
+                            Interlocked.Exchange(ref Tail, newTail);
+                            if (OldTailSlot1 == null)
+                            {
+                                if (OldTailSlot2 != null)
+                                {
+                                    OldTailSlot2.Clear(BufferIDNext);
+                                    OldTailSlot1 = OldTailSlot2;
+                                    OldTailSlot2 = oldTailTemp;
+                                }
+                            }
+                            //Tail = newTail;
                         }
                         else
                         {

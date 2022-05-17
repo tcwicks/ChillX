@@ -28,9 +28,12 @@ namespace ChillX.Core.CapabilityInterfaces
 {
     public interface ISupportRouting : ISupportUniqueID
     {
-        bool ReplyRequested { get; set; }
+        bool ReplyRequested { get; }
         void FireAndForget();
         void RequestReply();
+        bool IsReply { get; }
+
+        int OriginID { get; }
         DateTime CreationDate { get; }
         void CreationDateAssign(DateTime _creationDate);
         int DestinationServiceType { get; }

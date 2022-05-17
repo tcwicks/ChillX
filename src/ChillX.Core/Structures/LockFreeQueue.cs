@@ -1,4 +1,14 @@
-﻿using ChillX.Core.CapabilityBase;
+﻿// Note: This class is an extended version of Julian M Bucknall's Lock Free Queue structure. 
+// https://secondboyet.com/Articles/LockfreeQueue.html
+// This is not used by the ChillX Framework code in any way and is only provided here for performance comparison purposes
+// Note: At a first glance the LockFreeQueue<T> appears to out perform Locked structures such as ConcurrentQueue<T>
+// However when put to the test it fails because of the rate at which it pollutes the GC with instances of Node<T>
+// The eventual result when testing this LockFreeQueue<T> is over 60% time spent in GC.
+// Even in micro benchmarks where there isn't enough time for GC polution to build up:
+// 1) ConcurrentQueue<T> outperforms this by 85% if Count is not used, and by 44% if Count is used.
+// 2) ChillX.Core.Structures.ThreadSafeQueue<T> which uses a ReaderWriterLockSlim outperforms this by 85%
+
+using ChillX.Core.CapabilityBase;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +17,7 @@ using System.Threading;
 namespace ChillX.Core.Structures
 {
     /// <summary>
-    /// <see cref="ThreadSafeQueue{T}"/> is a faster and creates lower GC pressure than this implementation
+    /// <see cref="ThreadSafeQueue{T}"/> is much faster and creates lower GC pressure than this implementation
     /// This implementation is only provided as a reference example to compare the performance of lock free structures versus locking structures
     /// This LockFreeQueueNode<T> is not used in any way by the framework as it is inferior in every measurable aspect as compared to <see cref="ThreadSafeQueue{T}"/>
     /// </summary>

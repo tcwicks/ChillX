@@ -1143,7 +1143,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             Array.Copy(array, 0, buffer, startIndex, array.Length);
             return array.Length;
@@ -1177,7 +1177,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             array.AsSpan().CopyTo(buffer);
             return array.Length;
@@ -1211,7 +1211,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             array.CopyTo(buffer.AsSpan());
             return array.Length;
@@ -1245,7 +1245,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             array.CopyTo(buffer);
             return array.Length;
@@ -1259,7 +1259,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(byte[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length;
         }
 
@@ -1271,7 +1271,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(Span<byte> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length;
         }
 
@@ -1303,7 +1303,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             Array.Copy(array._rawBufferInternal, 0, buffer, startIndex, array.Length);
             return array.Length;
@@ -1337,7 +1337,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             array.BufferSpan.CopyTo(buffer);
             return array.Length;
@@ -1351,7 +1351,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<byte> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length;
         }
         #endregion
@@ -1383,7 +1383,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -1421,7 +1421,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -1459,7 +1459,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -1497,7 +1497,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -1517,7 +1517,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(bool[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length;
         }
 
@@ -1528,7 +1528,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(Span<bool> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length;
         }
 
@@ -1557,7 +1557,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -1595,7 +1595,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -1615,7 +1615,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<bool> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length;
         }
         #endregion
@@ -1648,7 +1648,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (char* pArr = &array[0])
@@ -1689,7 +1689,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (char* pArr = &array[0])
@@ -1730,7 +1730,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (char* pArr = &array[0])
@@ -1771,7 +1771,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (char* pArr = &array[0])
@@ -1812,7 +1812,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (char* pArr = &array._rawBufferInternal[0])
@@ -1853,7 +1853,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (char* pArr = &array._rawBufferInternal[0])
@@ -1876,7 +1876,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(char[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 2;
         }
 
@@ -1887,7 +1887,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(Span<char> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 2;
         }
 
@@ -1898,7 +1898,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<char> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 2;
         }
 
@@ -1932,7 +1932,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (short* pArr = &array[0])
@@ -1973,7 +1973,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (short* pArr = &array[0])
@@ -2014,7 +2014,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (short* pArr = &array[0])
@@ -2055,7 +2055,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (short* pArr = &array[0])
@@ -2096,7 +2096,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (short* pArr = &array._rawBufferInternal[0])
@@ -2137,7 +2137,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (short* pArr = &array._rawBufferInternal[0])
@@ -2160,7 +2160,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(short[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 2;
         }
 
@@ -2171,7 +2171,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(Span<short> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 2;
         }
 
@@ -2182,7 +2182,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<short> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 2;
         }
 
@@ -2216,7 +2216,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (int* pArr = &array[0])
@@ -2257,7 +2257,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (int* pArr = &array[0])
@@ -2298,7 +2298,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (int* pArr = &array[0])
@@ -2339,7 +2339,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (int* pArr = &array[0])
@@ -2380,7 +2380,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (int* pArr = &array._rawBufferInternal[0])
@@ -2421,7 +2421,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (int* pArr = &array._rawBufferInternal[0])
@@ -2444,7 +2444,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(int[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 4;
         }
 
@@ -2455,7 +2455,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(Span<int> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 4;
         }
 
@@ -2466,7 +2466,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<int> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 4;
         }
 
@@ -2500,7 +2500,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (long* pArr = &array[0])
@@ -2541,7 +2541,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (long* pArr = &array[0])
@@ -2582,7 +2582,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (long* pArr = &array[0])
@@ -2623,7 +2623,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (long* pArr = &array[0])
@@ -2664,7 +2664,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (long* pArr = &array._rawBufferInternal[0])
@@ -2705,7 +2705,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (long* pArr = &array._rawBufferInternal[0])
@@ -2728,7 +2728,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(long[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -2739,7 +2739,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<long> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -2774,7 +2774,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ushort* pArr = &array[0])
@@ -2816,7 +2816,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ushort* pArr = &array[0])
@@ -2858,7 +2858,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ushort* pArr = &array[0])
@@ -2900,7 +2900,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ushort* pArr = &array[0])
@@ -2942,7 +2942,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ushort* pArr = &array._rawBufferInternal[0])
@@ -2984,7 +2984,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ushort* pArr = &array._rawBufferInternal[0])
@@ -3008,7 +3008,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCountUShortArray(ushort[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 2;
         }
 
@@ -3020,7 +3020,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCountUShortArray(Span<ushort> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 2;
         }
 
@@ -3032,7 +3032,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCountUShortArray(RentedBuffer<ushort> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 2;
         }
 
@@ -3067,7 +3067,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (uint* pArr = &array[0])
@@ -3109,7 +3109,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (uint* pArr = &array[0])
@@ -3151,7 +3151,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (uint* pArr = &array[0])
@@ -3193,7 +3193,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (uint* pArr = &array[0])
@@ -3235,7 +3235,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (uint* pArr = &array._rawBufferInternal[0])
@@ -3277,7 +3277,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (uint* pArr = &array._rawBufferInternal[0])
@@ -3301,7 +3301,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCountUIntArray(uint[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 4;
         }
 
@@ -3313,7 +3313,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCountUIntArray(Span<uint> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 4;
         }
 
@@ -3325,7 +3325,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCountUIntArray(RentedBuffer<uint> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 4;
         }
 
@@ -3360,7 +3360,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ulong* pArr = &array[0])
@@ -3402,7 +3402,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ulong* pArr = &array[0])
@@ -3444,7 +3444,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ulong* pArr = &array[0])
@@ -3486,7 +3486,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ulong* pArr = &array[0])
@@ -3528,7 +3528,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ulong* pArr = &array._rawBufferInternal[0])
@@ -3570,7 +3570,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (ulong* pArr = &array._rawBufferInternal[0])
@@ -3594,7 +3594,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCountULongArray(ulong[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -3606,7 +3606,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCountULongArray(Span<ulong> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -3618,7 +3618,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCountULongArray(RentedBuffer<ulong> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -3652,7 +3652,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (float* pArr = &array[0])
@@ -3693,7 +3693,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (float* pArr = &array[0])
@@ -3734,7 +3734,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (float* pArr = &array[0])
@@ -3775,7 +3775,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (float* pArr = &array[0])
@@ -3816,7 +3816,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (float* pArr = &array._rawBufferInternal[0])
@@ -3857,7 +3857,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (float* pArr = &array._rawBufferInternal[0])
@@ -3880,7 +3880,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(float[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 4;
         }
 
@@ -3891,7 +3891,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(Span<float> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 4;
         }
 
@@ -3902,7 +3902,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<float> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 4;
         }
 
@@ -3936,7 +3936,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (double* pArr = &array[0])
@@ -3977,7 +3977,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (double* pArr = &array[0])
@@ -4018,7 +4018,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (double* pArr = &array[0])
@@ -4059,7 +4059,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (double* pArr = &array[0])
@@ -4100,7 +4100,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (double* pArr = &array._rawBufferInternal[0])
@@ -4123,7 +4123,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(double[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -4134,7 +4134,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(Span<double> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -4145,7 +4145,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<double> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -4179,7 +4179,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (decimal* pArr = &array[0])
@@ -4220,7 +4220,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (decimal* pArr = &array[0])
@@ -4261,7 +4261,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (decimal* pArr = &array[0])
@@ -4302,7 +4302,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (decimal* pArr = &array[0])
@@ -4343,7 +4343,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (decimal* pArr = &array._rawBufferInternal[0])
@@ -4384,7 +4384,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (decimal* pArr = &array._rawBufferInternal[0])
@@ -4407,7 +4407,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(decimal[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 16;
         }
 
@@ -4418,7 +4418,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(Span<decimal> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 16;
         }
 
@@ -4429,7 +4429,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<decimal> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 16;
         }
 
@@ -4463,7 +4463,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4501,7 +4501,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4539,7 +4539,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4577,7 +4577,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4615,7 +4615,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4653,7 +4653,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4673,7 +4673,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(TimeSpan[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -4684,7 +4684,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(Span<TimeSpan> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -4695,7 +4695,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<TimeSpan> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -4731,7 +4731,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4771,7 +4771,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4811,7 +4811,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4851,7 +4851,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4891,7 +4891,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4931,7 +4931,7 @@ namespace ChillX.Serialization
             }
             Contract.EndContractBlock();
 
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
 
             int len = array.Length;
             fixed (byte* b = &buffer[startIndex])
@@ -4951,7 +4951,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(DateTime[] array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -4962,7 +4962,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(Span<DateTime> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
@@ -4973,7 +4973,7 @@ namespace ChillX.Serialization
         /// <returns>number of bytes required to serialize specified array</returns>
         public static int GetByteCount(RentedBuffer<DateTime> array)
         {
-            if (array == null) { return 0; }
+            if (array == null || array.Length == 0) { return 0; }
             return array.Length * 8;
         }
 
