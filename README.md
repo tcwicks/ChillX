@@ -35,7 +35,7 @@ A Message queue plus serializer are simply two of the building  blocks for a Ser
 - Minimizing GC overheads
 - etc...
 
-As a matter of fact ZeroMQ plus MessagePackSharp used to be my goto frameworks for implementing Services / Micro Services ranging from ETL to Machine Learning model processors (Tensorflow.Net / TorchSharp) to various other transaction processing backends. Unfortunately however each time I end up having to re-implement a significant amount of plumbing. Hence I decided to put this framework together combining the best features from each implementation.
+As a matter of fact ZeroMQ (Router Dealer pattern) plus MessagePackSharp used to be my goto frameworks for implementing Services / Micro Services ranging from ETL to Machine Learning model processors (Tensorflow.Net / TorchSharp) to various other transaction processing backends. Unfortunately however each time I end up having to re-implement a significant amount of plumbing. Hence I decided to put this framework together combining the best features from each implementation.
 
 ### Custom serializer:
 
@@ -70,4 +70,5 @@ Log entries could be bulk written do a database using BCP. How would this be don
 ChillX.Logging is implemented as a log entry queue which adds each entry to a pending queue and returns immediately. Log entries themselves are committed to durable storage such as a DB server by a separate thread. Multiple log writers can be implemented and attached either for different destinations or different types of storage. In the case of a DB logger this can easily use BCP for logging.
 
 ### Message Queue
+Work in progress. Currently working on point to multipoint router.
 documentation to be continued...
