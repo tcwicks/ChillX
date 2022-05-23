@@ -75,4 +75,5 @@ ChillX.Logging is implemented as a log entry queue which adds each entry to a pe
 
 ### Message Queue
 Work in progress. Currently working on point to multipoint router.
+Note: This is only an initial **Non Working** commit of the Message Queue implementation.
 documentation to be continued...
