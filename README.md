@@ -7,6 +7,8 @@ ChillX is currently a work in progress for creating a Micro Services host with b
 
 Implementation is in Dot Net Standard 2.0 so its usable in Dot Net Framework 4.x, Dot Net Core and Dot Net 5.0 / 6.0
 
+Note: Please excuse the mixed naming conventions. I'm working on this late at night after working on litterally a different project / programming language each day C#, C++, PHP, VB.Net, Python, bash scripting, etc...
+
 ## Overall objectives / goals:
 - Performance as a feature
 - Seamless horizontal (load) and vertical (functionality) scalability of hosted micro services
